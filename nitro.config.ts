@@ -10,7 +10,8 @@ export default async () =>
     },
     runtimeConfig: {
       mongoUri: 'mongodb://root:example@localhost:27017/',
-      secret: 'secret'
+      secret: 'secret',
+      genesisWallet: '0x'
     },
     imports: {
       imports: [
