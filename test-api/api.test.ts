@@ -7,6 +7,7 @@ describe('API', () => {
     privateKey: '',
     address: ''
   }
+  let signature = ''
 
   describe('/wallet', () => {
     it('[200] generate new wallet', async () => {
@@ -98,6 +99,93 @@ describe('API', () => {
             name: 'Test Token',
             symbol: 'TST',
             author: '55555'
+          })
+        }
+      })
+    })
+  })
+
+  describe('/sign', () => {
+    it('[200] sign message', async () => {
+      await $fetch('/sign', {
+        method: 'POST',
+        baseURL: 'http://localhost:3000',
+        headers: {
+          Accept: 'application/json',
+          Cookie: `accessToken=${accessToken}`
+        },
+        body: {
+          privateKey: wallet.privateKey,
+          from: wallet.address,
+          to: '0x',
+          value: 100,
+          symbol: 'TST'
+        },
+        onResponse: ({ response }) => {
+          expect(response.status).toBe(200)
+          signature = response._data
+          expect(typeof response._data).toBe('string')
+        }
+      })
+    })
+  })
+
+  describe('/transaction', () => {
+    it('[200] get all transactions', async () => {
+      await $fetch('/transaction/TST', {
+        baseURL: 'http://localhost:3000',
+        headers: {
+          Accept: 'application/json'
+        },
+        onResponse: ({ response }) => {
+          expect(response.status).toBe(200)
+          expect(response._data).toBeInstanceOf(Array)
+        }
+      })
+    })
+
+    it('[200] create transaction', async () => {
+      await $fetch('/transaction/TST', {
+        method: 'POST',
+        baseURL: 'http://localhost:3000',
+        headers: {
+          Accept: 'application/json',
+          Cookie: `accessToken=${accessToken}`
+        },
+        body: {
+          from: wallet.address,
+          to: '0x',
+          value: 100,
+          message: 'hello world',
+          signature
+        },
+        onResponse: ({ response }) => {
+          expect(response.status).toBe(200)
+          expect(response._data).toMatchObject({
+            from: wallet.address,
+            to: '0x',
+            value: 100,
+            symbol: 'TST'
+          })
+        }
+      })
+    })
+
+    it('[200] transaction successfully added', async () => {
+      await $fetch('/transaction/TST', {
+        baseURL: 'http://localhost:3000',
+        headers: {
+          Accept: 'application/json'
+        },
+        onResponse: ({ response }) => {
+          expect(response.status).toBe(200)
+          expect(response._data).toBeInstanceOf(Array)
+          expect(response._data.length).toBe(2)
+          expect(response._data[1]).toMatchObject({
+            from: wallet.address,
+            to: '0x',
+            value: 100,
+            symbol: 'TST'
           })
         }
       })
