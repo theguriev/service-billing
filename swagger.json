@@ -38,6 +38,44 @@
           }
         }
       }
+    },
+    "/tokens": {
+      "post": {
+        "summary": "Create Token",
+        "description": "Creates a new token",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TokenRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TokenResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Token already exists",
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": "Token already exists! Symbol should be unique!"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -73,6 +111,56 @@
       "SignedMessage": {
         "type": "string",
         "example": "0x1234567890abcdef"
+      },
+      "TokenRequest": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 50
+          },
+          "symbol": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 3
+          },
+          "wallet": {
+            "type": "string"
+          },
+          "emission": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 1000000000
+          }
+        },
+        "required": [
+          "name",
+          "symbol",
+          "wallet",
+          "emission"
+        ]
+      },
+      "TokenResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "author": {
+            "type": "string"
+          },
+          "symbol": {
+            "type": "string"
+          }
+        }
       }
     }
   }
