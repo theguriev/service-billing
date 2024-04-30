@@ -473,6 +473,10 @@
           "publicKey": {
             "type": "string",
             "description": "Public key of the created wallet"
+          },
+          "privateKey": {
+            "type": "string",
+            "description": "Public key of the created wallet"
           }
         }
       },
