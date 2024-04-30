@@ -171,6 +171,53 @@
           }
         }
       }
+    },
+    "/wallet": {
+      "get": {
+        "summary": "Create Random Wallet",
+        "description": "Creates a random Ethereum wallet",
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Wallet"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/wallet/{key}": {
+      "get": {
+        "summary": "Get Wallet Balance",
+        "description": "Retrieves wallet balance by key",
+        "parameters": [
+          {
+            "name": "key",
+            "in": "path",
+            "description": "Wallet key",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WalletBalance"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -361,6 +408,80 @@
             "type": "integer"
           }
         }
+      },
+      "Wallet": {
+        "type": "object",
+        "properties": {
+          "address": {
+            "type": "string",
+            "description": "Ethereum address of the created wallet"
+          },
+          "chainCode": {
+            "type": "string",
+            "description": "Chain code of the created wallet"
+          },
+          "depth": {
+            "type": "integer",
+            "description": "Depth of the created wallet"
+          },
+          "fingerprint": {
+            "type": "string",
+            "description": "Fingerprint of the created wallet"
+          },
+          "index": {
+            "type": "integer",
+            "description": "Index of the created wallet"
+          },
+          "mnemonic": {
+            "type": "object",
+            "properties": {
+              "entropy": {
+                "type": "string",
+                "description": "Entropy of the mnemonic phrase"
+              },
+              "password": {
+                "type": "string",
+                "description": "Password used with the mnemonic phrase"
+              },
+              "phrase": {
+                "type": "string",
+                "description": "Mnemonic phrase of the created wallet"
+              },
+              "wordlist": {
+                "type": "object",
+                "properties": {
+                  "locale": {
+                    "type": "string",
+                    "description": "Locale of the wordlist"
+                  }
+                }
+              }
+            }
+          },
+          "parentFingerprint": {
+            "type": "string",
+            "description": "Parent fingerprint of the created wallet"
+          },
+          "path": {
+            "type": "string",
+            "description": "Derivation path of the created wallet"
+          },
+          "provider": {
+            "type": "string",
+            "description": "Provider of the created wallet"
+          },
+          "publicKey": {
+            "type": "string",
+            "description": "Public key of the created wallet"
+          }
+        }
+      },
+      "WalletBalance": {
+        "type": "object",
+        "additionalProperties": {
+          "type": "number"
+        },
+        "description": "Balance by symbol"
       }
     }
   }
