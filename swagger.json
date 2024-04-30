@@ -11,7 +11,7 @@
     }
   ],
   "paths": {
-    "/signMessage": {
+    "/signature": {
       "post": {
         "summary": "Sign Ethereum Message",
         "description": "Signs an Ethereum message using a private key",
@@ -39,7 +39,7 @@
         }
       }
     },
-    "/tokens": {
+    "/token": {
       "post": {
         "summary": "Create Token",
         "description": "Creates a new token",
