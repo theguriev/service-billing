@@ -75,6 +75,71 @@
             }
           }
         }
+      },
+      "get": {
+        "summary": "Get All Tokens",
+        "description": "Retrieves all tokens",
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TokensList"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/transaction/{symbol}": {
+      "post": {
+        "summary": "Verify Signature and Perform Transaction",
+        "description": "Verifies a signature and performs a transaction for a specific symbol",
+        "parameters": [
+          {
+            "name": "symbol",
+            "in": "path",
+            "description": "Symbol identifier",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TransactionRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TransactionResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": "Invalid signature! Or Insufficient funds!"
+                }
+              }
+            }
+          }
+        }
       }
     }
   },
@@ -159,6 +224,84 @@
           },
           "symbol": {
             "type": "string"
+          }
+        }
+      },
+      "TokensList": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string"
+            },
+            "name": {
+              "type": "string"
+            },
+            "timestamp": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "author": {
+              "type": "string"
+            },
+            "symbol": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "TransactionRequest": {
+        "type": "object",
+        "properties": {
+          "from": {
+            "type": "string"
+          },
+          "to": {
+            "type": "string"
+          },
+          "value": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "signature": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "from",
+          "to",
+          "value",
+          "signature"
+        ]
+      },
+      "TransactionResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "from": {
+            "type": "string"
+          },
+          "to": {
+            "type": "string"
+          },
+          "symbol": {
+            "type": "string"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "message": {
+            "type": "string"
+          },
+          "value": {
+            "type": "integer"
           }
         }
       }
