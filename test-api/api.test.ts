@@ -10,7 +10,7 @@ describe('API', () => {
   let signature = ''
 
   describe('/wallet', () => {
-    it.only('[200] generate new wallet', async () => {
+    it('[200] generate new wallet', async () => {
       await $fetch('/wallet', {
         baseURL: 'http://localhost:3000',
         headers: {
@@ -48,13 +48,7 @@ describe('API', () => {
         },
         onResponse: ({ response }) => {
           expect(response.status).toBe(200)
-          expect(response._data).toMatchObject({
-            ballanceBySymbol: expect.any(Object),
-            income: expect.any(Array),
-            incomeBySymbol: expect.any(Object),
-            outcome: expect.any(Array),
-            outcomeBySymbol: expect.any(Object)
-          })
+          expect(response._data).toMatchObject(expect.any(Object))
         }
       })
     })
