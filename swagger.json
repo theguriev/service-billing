@@ -140,6 +140,36 @@
             }
           }
         }
+      },
+      "get": {
+        "summary": "Get Transaction History by Symbol",
+        "description": "Retrieves transaction history for a specific symbol",
+        "parameters": [
+          {
+            "name": "symbol",
+            "in": "path",
+            "description": "Symbol identifier",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Transaction"
+                  }
+                }
+              }
+            }
+          }
+        }
       }
     }
   },
@@ -279,6 +309,33 @@
         ]
       },
       "TransactionResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "from": {
+            "type": "string"
+          },
+          "to": {
+            "type": "string"
+          },
+          "symbol": {
+            "type": "string"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "message": {
+            "type": "string"
+          },
+          "value": {
+            "type": "integer"
+          }
+        }
+      },
+      "Transaction": {
         "type": "object",
         "properties": {
           "id": {
