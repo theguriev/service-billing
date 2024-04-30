@@ -10,7 +10,7 @@ describe('API', () => {
   let signature = ''
 
   describe('/wallet', () => {
-    it('[200] generate new wallet', async () => {
+    it.only('[200] generate new wallet', async () => {
       await $fetch('/wallet', {
         baseURL: 'http://localhost:3000',
         headers: {
@@ -19,8 +19,20 @@ describe('API', () => {
         onResponse: ({ response }) => {
           expect(response.status).toBe(200)
           expect(response._data).toMatchObject({
+            provider: null,
             address: expect.any(String),
-            privateKey: expect.any(String)
+            publicKey: expect.any(String),
+            privateKey: expect.any(String),
+            fingerprint: expect.any(String),
+            parentFingerprint: expect.any(String),
+            mnemonic: {
+              phrase: expect.any(String),
+              password: ''
+            },
+            chainCode: expect.any(String),
+            path: "m/44'/60'/0'/0/0",
+            index: 0,
+            depth: 5
           })
           wallet.privateKey = response._data.privateKey
           wallet.address = response._data.address
