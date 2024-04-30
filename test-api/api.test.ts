@@ -105,9 +105,9 @@ describe('API', () => {
     })
   })
 
-  describe('/sign', () => {
+  describe('/signature', () => {
     it('[200] sign message', async () => {
-      await $fetch('/sign', {
+      await $fetch('/signature', {
         method: 'POST',
         baseURL: 'http://localhost:3000',
         headers: {
