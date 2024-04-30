@@ -1,1 +1,4 @@
-export default eventHandler(event => getBallance(getRouterParam(event, 'key')!))
+export default eventHandler(async (event) => {
+  const ballanceObject = await getBallance(getRouterParam(event, 'key')!)
+  return ballanceObject.ballanceBySymbol
+})
