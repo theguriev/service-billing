@@ -286,7 +286,7 @@
       "TokenResponse": {
         "type": "object",
         "properties": {
-          "id": {
+          "_id": {
             "type": "string"
           },
           "name": {
@@ -309,7 +309,7 @@
         "items": {
           "type": "object",
           "properties": {
-            "id": {
+            "_id": {
               "type": "string"
             },
             "name": {
@@ -358,7 +358,7 @@
       "TransactionResponse": {
         "type": "object",
         "properties": {
-          "id": {
+          "_id": {
             "type": "string"
           },
           "from": {
@@ -385,7 +385,7 @@
       "Transaction": {
         "type": "object",
         "properties": {
-          "id": {
+          "_id": {
             "type": "string"
           },
           "from": {
