@@ -13,7 +13,6 @@
     "test:api": "NODE_OPTIONS=\"--enable-source-maps --experimental-vm-modules\" vitest run -c vitest.api.ts"
   },
   "devDependencies": {
-    "@types/jsonwebtoken": "^9.0.6",
     "@types/set-cookie-parser": "^2.4.7",
     "@types/uuid": "^9.0.8",
     "@vitest/coverage-v8": "^1.5.2",
@@ -23,7 +22,6 @@
     "@nuxtjs/eslint-config-typescript": "^12.1.0",
     "eslint": "^8.57.0",
     "ethers": "^6.12.0",
-    "jsonwebtoken": "^9.0.2",
     "mongodb-memory-server": "^9.2.0",
     "mongoose": "^8.3.2",
     "nitropack": "^2.9.6",

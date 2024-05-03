@@ -1,5 +1,6 @@
 export {}
 declare global {
+  const $fetch: typeof import('ofetch')['$fetch']
   const afterAll: typeof import('vitest')['afterAll']
   const beforeAll: typeof import('vitest')['beforeAll']
   const describe: typeof import('vitest')['describe']
