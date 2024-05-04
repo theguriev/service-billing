@@ -1,13 +1,16 @@
-import issueAccessToken from '@/utils/issueAccessToken'
-
 describe('API', () => {
-  const secret = String(process.env.NITRO_SECRET)
-  const accessToken = issueAccessToken({ userId: '55555', email: 'eugen@guriev.net', name: 'Eugen Guriev' }, { secret })
   const wallet = {
     privateKey: '',
     address: ''
   }
+  const tokenName = 'Test Token'
+  const tokenSymbol = 'TST'
+  const tokenEmission = 1000
+  const tokenDescription = 'Test Token Description'
+
+  let tokenId = ''
   let signature = ''
+  const transactionId = ''
 
   describe('/wallet', () => {
     it('[200] generate new wallet', async () => {
@@ -73,21 +76,23 @@ describe('API', () => {
         method: 'POST',
         baseURL: 'http://localhost:3000',
         headers: {
-          Accept: 'application/json',
-          Cookie: `accessToken=${accessToken}`
+          Accept: 'application/json'
         },
         body: {
-          name: 'Test Token',
-          symbol: 'TST',
-          wallet: wallet.address,
-          emission: 1000
+          name: tokenName,
+          symbol: tokenSymbol,
+          address: wallet.address,
+          emission: tokenEmission,
+          description: tokenDescription,
+          signature: await signToken(wallet.privateKey, tokenName, wallet.address, tokenEmission, tokenSymbol)
         },
         onResponse: ({ response }) => {
           expect(response.status).toBe(200)
           expect(response._data).toMatchObject({
-            name: 'Test Token',
-            symbol: 'TST',
-            author: '55555'
+            address: wallet.address,
+            name: tokenName,
+            symbol: tokenSymbol,
+            description: tokenDescription
           })
         }
       })
@@ -101,10 +106,37 @@ describe('API', () => {
         },
         onResponse: ({ response }) => {
           expect(response.status).toBe(200)
+          tokenId = response._data[0]._id
           expect(response._data[0]).toMatchObject({
-            name: 'Test Token',
-            symbol: 'TST',
-            author: '55555'
+            address: wallet.address,
+            name: tokenName,
+            symbol: tokenSymbol,
+            description: tokenDescription,
+            _id: expect.any(String)
+          })
+        }
+      })
+    })
+
+    it('[200] issue additional emission', async () => {
+      await $fetch('/token/issue', {
+        method: 'POST',
+        baseURL: 'http://localhost:3000',
+        headers: {
+          Accept: 'application/json'
+        },
+        body: {
+          symbol: tokenSymbol,
+          address: wallet.address,
+          emission: 2222,
+          signature: await signIssue(wallet.privateKey, wallet.address, 2222, tokenSymbol)
+        },
+        onResponse: ({ response }) => {
+          expect(response.status).toBe(200)
+          expect(response._data).toMatchObject({
+            to: wallet.address,
+            symbol: tokenSymbol,
+            value: 2222
           })
         }
       })
@@ -117,8 +149,7 @@ describe('API', () => {
         method: 'POST',
         baseURL: 'http://localhost:3000',
         headers: {
-          Accept: 'application/json',
-          Cookie: `accessToken=${accessToken}`
+          Accept: 'application/json'
         },
         body: {
           privateKey: wallet.privateKey,
@@ -137,6 +168,31 @@ describe('API', () => {
   })
 
   describe('/transaction', () => {
+    it('[200] create transaction', async () => {
+      await $fetch(`/transaction/${tokenSymbol}`, {
+        method: 'POST',
+        baseURL: 'http://localhost:3000',
+        headers: {
+          Accept: 'application/json'
+        },
+        body: {
+          from: wallet.address,
+          to: '0x',
+          value: 100,
+          message: 'hello world',
+          signature: await signTransaction(wallet.privateKey, wallet.address, '0x', 100, tokenSymbol)
+        },
+        onResponse: ({ response }) => {
+          expect(response.status).toBe(200)
+          expect(response._data).toMatchObject({
+            from: wallet.address,
+            to: '0x',
+            value: 100,
+            symbol: tokenSymbol
+          })
+        }
+      })
+    })
     it('[200] get all transactions', async () => {
       await $fetch('/transaction/TST', {
         baseURL: 'http://localhost:3000',
@@ -146,53 +202,7 @@ describe('API', () => {
         onResponse: ({ response }) => {
           expect(response.status).toBe(200)
           expect(response._data).toBeInstanceOf(Array)
-        }
-      })
-    })
-
-    it('[200] create transaction', async () => {
-      await $fetch('/transaction/TST', {
-        method: 'POST',
-        baseURL: 'http://localhost:3000',
-        headers: {
-          Accept: 'application/json',
-          Cookie: `accessToken=${accessToken}`
-        },
-        body: {
-          from: wallet.address,
-          to: '0x',
-          value: 100,
-          message: 'hello world',
-          signature
-        },
-        onResponse: ({ response }) => {
-          expect(response.status).toBe(200)
-          expect(response._data).toMatchObject({
-            from: wallet.address,
-            to: '0x',
-            value: 100,
-            symbol: 'TST'
-          })
-        }
-      })
-    })
-
-    it('[200] transaction successfully added', async () => {
-      await $fetch('/transaction/TST', {
-        baseURL: 'http://localhost:3000',
-        headers: {
-          Accept: 'application/json'
-        },
-        onResponse: ({ response }) => {
-          expect(response.status).toBe(200)
-          expect(response._data).toBeInstanceOf(Array)
-          expect(response._data.length).toBe(2)
-          expect(response._data[1]).toMatchObject({
-            from: wallet.address,
-            to: '0x',
-            value: 100,
-            symbol: 'TST'
-          })
+          expect(response._data.length).toBe(3)
         }
       })
     })

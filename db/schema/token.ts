@@ -2,9 +2,10 @@ import { Schema } from 'mongoose'
 
 const tokenSchema = new Schema({
   name: String,
+  description: String,
   symbol: String,
   timestamp: Number,
-  author: String
+  address: String
 })
 
 export default tokenSchema
