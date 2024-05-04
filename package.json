@@ -9,7 +9,6 @@
     "lint:fix": "eslint --cache --fix --ext .ts,.mjs,.cjs . && prettier --write -c src test",
     "vitest-es": "NODE_OPTIONS=\"--enable-source-maps --experimental-vm-modules\" vitest",
     "test": "pnpm run lint && pnpm run test:unit && pnpm run test:api",
-    "test:unit": "NODE_OPTIONS=\"--enable-source-maps --experimental-vm-modules\" vitest run --coverage -c vitest.unit.ts",
     "test:api": "NODE_OPTIONS=\"--enable-source-maps --experimental-vm-modules\" vitest run -c vitest.api.ts"
   },
   "devDependencies": {

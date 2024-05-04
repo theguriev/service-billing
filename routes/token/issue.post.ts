@@ -21,8 +21,8 @@ export default eventHandler(async (event) => {
     throw createError({ message: 'Invalid signature!', status: 400 })
   }
   const exist = await ModelToken.findOne({ symbol })
-  if (exist) {
-    throw createError({ message: 'Token already exists! Symbol should be unique!', status: 409 })
+  if (!exist) {
+    throw createError({ message: 'Token does not exist!', status: 404 })
   }
   const saved = await issue({ address, symbol, emission })
   return saved.toJSON()

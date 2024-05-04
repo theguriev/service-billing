@@ -1,5 +1,5 @@
 const issue = ({ address, symbol, emission }: { address: string; symbol: string; emission: number }) => {
-  const { genesisaddress: from } = useRuntimeConfig()
+  const { genesisAddress: from } = useRuntimeConfig()
   const genesisTransaction = new ModelTransaction({
     from,
     to: address,

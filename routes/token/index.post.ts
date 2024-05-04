@@ -1,6 +1,6 @@
 const requestBodySchema = z.object({
   name: z.string().min(3).max(50),
-  description: z.string(),
+  description: z.string().optional(),
   symbol: z.string().min(1).max(3),
   address: z.string(),
   emission: z.number().int().min(1).max(10000000000),
