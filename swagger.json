@@ -96,8 +96,8 @@
             "description": "Token already exists",
             "content": {
               "application/json": {
-                "example": {
-                  "error": "Token already exists! Symbol should be unique!"
+                "schema": {
+                  "$ref": "#/components/schemas/TokenPost409Error"
                 }
               }
             }
@@ -415,6 +415,27 @@
           },
           "symbol": {
             "type": "string"
+          }
+        }
+      },
+      "TokenPost409Error": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string",
+            "example": "/forgot-password"
+          },
+          "statusCode": {
+            "type": "integer",
+            "example": 409
+          },
+          "statusMessage": {
+            "type": "string",
+            "example": "Validation Error"
+          },
+          "message": {
+            "type": "string",
+            "example": "Validation Error"
           }
         }
       },
