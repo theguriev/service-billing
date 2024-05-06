@@ -24,6 +24,10 @@ export default eventHandler(async (event) => {
   if (!exist) {
     throw createError({ message: 'Token does not exist!', status: 404 })
   }
+  const token = exist.toJSON()
+  if (token.address !== address) {
+    throw createError({ message: 'Invalid address! You are not the owner of the token!', status: 400 })
+  }
   const saved = await issue({ address, symbol, emission })
   return saved.toJSON()
 })
