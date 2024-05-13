@@ -283,6 +283,37 @@
         }
       }
     },
+    "/transaction/address/{address}": {
+      "get": {
+        "summary": "Get all transactions by address",
+        "parameters": [
+          {
+            "name": "address",
+            "in": "path",
+            "description": "Wallet address to fetch transactions",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Transaction"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/wallet": {
       "get": {
         "summary": "Create Random Wallet",

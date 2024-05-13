@@ -206,5 +206,19 @@ describe('API', () => {
         }
       })
     })
+
+    it('get all transactions by address', async () => {
+      await $fetch(`/transaction/address/${wallet.address}`, {
+        baseURL: 'http://localhost:3000',
+        headers: {
+          Accept: 'application/json'
+        },
+        onResponse: ({ response }) => {
+          expect(response.status).toBe(200)
+          expect(response._data).toBeInstanceOf(Array)
+          expect(response._data.length).toBe(3)
+        }
+      })
+    })
   })
 })
