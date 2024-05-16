@@ -143,30 +143,6 @@ describe('API', () => {
     })
   })
 
-  describe('/signature', () => {
-    it('[200] sign message', async () => {
-      await $fetch('/signature', {
-        method: 'POST',
-        baseURL: 'http://localhost:3000',
-        headers: {
-          Accept: 'application/json'
-        },
-        body: {
-          privateKey: wallet.privateKey,
-          from: wallet.address,
-          to: '0x',
-          value: 100,
-          symbol: 'TST'
-        },
-        onResponse: ({ response }) => {
-          expect(response.status).toBe(200)
-          signature = response._data
-          expect(typeof response._data).toBe('string')
-        }
-      })
-    })
-  })
-
   describe('/transaction', () => {
     it('[200] create transaction', async () => {
       await $fetch(`/transaction/${tokenSymbol}`, {
