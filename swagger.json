@@ -11,27 +11,28 @@
     }
   ],
   "paths": {
-    "/signature": {
-      "post": {
-        "summary": "Sign Ethereum Message",
-        "description": "Signs an Ethereum message using a private key",
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/MessageRequest"
-              }
+    "/ballance/{address}": {
+      "get": {
+        "summary": "Get Wallet Balance",
+        "description": "Retrieves wallet balance by public address",
+        "parameters": [
+          {
+            "name": "address",
+            "in": "path",
+            "description": "Wallet public address",
+            "required": true,
+            "schema": {
+              "type": "string"
             }
           }
-        },
+        ],
         "responses": {
           "200": {
             "description": "Successful operation",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/SignedMessage"
+                  "$ref": "#/components/schemas/WalletBalance"
                 }
               }
             }
@@ -325,35 +326,6 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Wallet"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/wallet/{key}": {
-      "get": {
-        "summary": "Get Wallet Balance",
-        "description": "Retrieves wallet balance by key",
-        "parameters": [
-          {
-            "name": "key",
-            "in": "path",
-            "description": "Wallet key",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful operation",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/WalletBalance"
                 }
               }
             }
