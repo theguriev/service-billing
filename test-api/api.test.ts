@@ -28,9 +28,9 @@ describe('API', () => {
     })
   })
 
-  describe('/token', () => {
+  describe('/tokens', () => {
     it('[200] get all tokens', async () => {
-      await $fetch('/token', {
+      await $fetch('/tokens', {
         baseURL: 'http://localhost:3000',
         headers: {
           Accept: 'application/json'
@@ -43,7 +43,7 @@ describe('API', () => {
     })
 
     it('[200] create token', async () => {
-      await $fetch('/token', {
+      await $fetch('/tokens', {
         method: 'POST',
         baseURL: 'http://localhost:3000',
         headers: {
@@ -70,7 +70,7 @@ describe('API', () => {
     })
 
     it('[200] token successfully added', async () => {
-      await $fetch('/token', {
+      await $fetch('/tokens', {
         baseURL: 'http://localhost:3000',
         headers: {
           Accept: 'application/json'
@@ -90,7 +90,7 @@ describe('API', () => {
     })
 
     it('[200] issue additional emission', async () => {
-      await $fetch('/token/issue', {
+      await $fetch('/tokens/issue', {
         method: 'POST',
         baseURL: 'http://localhost:3000',
         headers: {
@@ -114,7 +114,7 @@ describe('API', () => {
     })
 
     it('[200] create one more token', async () => {
-      await $fetch('/token', {
+      await $fetch('/tokens', {
         method: 'POST',
         baseURL: 'http://localhost:3000',
         headers: {
@@ -141,7 +141,7 @@ describe('API', () => {
     })
 
     it('[200] get all tokens DESC', async () => {
-      await $fetch('/token', {
+      await $fetch('/tokens', {
         baseURL: 'http://localhost:3000',
         headers: {
           Accept: 'application/json'
@@ -154,7 +154,7 @@ describe('API', () => {
     })
 
     it('[200] get all tokens order==ASC', async () => {
-      await $fetch('/token?order=asc', {
+      await $fetch('/tokens?order=asc', {
         baseURL: 'http://localhost:3000',
         headers: {
           Accept: 'application/json'
@@ -167,7 +167,7 @@ describe('API', () => {
     })
 
     it('[200] get all tokens limit==10', async () => {
-      await $fetch('/token?limit=10', {
+      await $fetch('/tokens?limit=10', {
         baseURL: 'http://localhost:3000',
         headers: {
           Accept: 'application/json'
@@ -180,7 +180,7 @@ describe('API', () => {
     })
 
     it('[200] get all tokens limit==1', async () => {
-      await $fetch('/token?limit=1', {
+      await $fetch('/tokens?limit=1', {
         baseURL: 'http://localhost:3000',
         headers: {
           Accept: 'application/json'
@@ -193,7 +193,7 @@ describe('API', () => {
     })
 
     it('[200] get all tokens offset==1', async () => {
-      await $fetch('/token?offset=1', {
+      await $fetch('/tokens?offset=1', {
         baseURL: 'http://localhost:3000',
         headers: {
           Accept: 'application/json'
@@ -207,7 +207,7 @@ describe('API', () => {
     })
 
     it('[200] get token by id', async () => {
-      await $fetch(`/token/${tokenId}`, {
+      await $fetch(`/tokens/${tokenId}`, {
         baseURL: 'http://localhost:3000',
         headers: {
           Accept: 'application/json'
