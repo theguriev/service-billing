@@ -240,6 +240,20 @@ describe('API', () => {
         }
       })
     })
+
+    it('[200] get token by id', async () => {
+      await $fetch(`/token/${tokenId}`, {
+        baseURL: 'http://localhost:3000',
+        headers: {
+          Accept: 'application/json'
+        },
+        onResponse: ({ response }) => {
+          expect(response.status).toBe(200)
+          expect(response._data._id).toBe(tokenId)
+          expect(response._data.address).toBe(wallet.address)
+        }
+      })
+    })
   })
 
   describe('/transaction', () => {
@@ -291,7 +305,7 @@ describe('API', () => {
         onResponse: ({ response }) => {
           expect(response.status).toBe(200)
           expect(response._data).toBeInstanceOf(Array)
-          expect(response._data.length).toBe(3)
+          expect(response._data.length).toBe(4)
         }
       })
     })
