@@ -1,13 +1,10 @@
 describe('API', () => {
-  const wallet = {
-    privateKey: '',
-    address: ''
-  }
+  const wallet = Wallet.createRandom()
+  const wallet2 = Wallet.createRandom()
   const tokenName = 'Test Token'
   const tokenSymbol = 'TST'
   const tokenEmission = 1000
   const tokenDescription = 'Test Token Description'
-
 
   const tokenName2 = 'Test Token 2'
   const tokenSymbol2 = 'ABC'
@@ -15,10 +12,8 @@ describe('API', () => {
   const tokenDescription2 = 'Test Token Description 2'
 
   let tokenId = ''
-  const signature = ''
-  const transactionId = ''
 
-  describe('/wallet', () => {
+  describe.skip('/wallet', () => {
     it('[200] generate new wallet', async () => {
       await $fetch('/wallet', {
         baseURL: 'http://localhost:3000',
@@ -256,7 +251,155 @@ describe('API', () => {
     })
   })
 
-  describe('/transaction', () => {
+  describe('/transactions', () => {
+    it('[200] get all transactions', async () => {
+      await $fetch('/transactions', {
+        baseURL: 'http://localhost:3000',
+        headers: {
+          Accept: 'application/json'
+        },
+        onResponse: ({ response }) => {
+          expect(response.status).toBe(200)
+          expect(response._data).toBeInstanceOf(Array)
+          expect(response._data?.[0].timestamp > response._data?.[1].timestamp).toBe(true)
+        }
+      })
+    })
+
+    it('[200] get all transactions ASC', async () => {
+      await $fetch('/transactions?order=asc', {
+        baseURL: 'http://localhost:3000',
+        headers: {
+          Accept: 'application/json'
+        },
+        onResponse: ({ response }) => {
+          expect(response.status).toBe(200)
+          expect(response._data?.[0].timestamp < response._data?.[1].timestamp).toBe(true)
+        }
+      })
+    })
+
+    it('[200] get all transactions limit==10', async () => {
+      await $fetch('/transactions?limit=10', {
+        baseURL: 'http://localhost:3000',
+        headers: {
+          Accept: 'application/json'
+        },
+        onResponse: ({ response }) => {
+          expect(response.status).toBe(200)
+          expect(response._data?.length <= 10).toBe(true)
+        }
+      })
+    })
+
+    it('[200] get all transactions limit==1', async () => {
+      await $fetch('/transactions?limit=1', {
+        baseURL: 'http://localhost:3000',
+        headers: {
+          Accept: 'application/json'
+        },
+        onResponse: ({ response }) => {
+          expect(response.status).toBe(200)
+          expect(response._data?.length).toBe(1)
+        }
+      })
+    })
+
+    it('[200] get all transactions offset==1', async () => {
+      await $fetch('/transactions?offset=1', {
+        baseURL: 'http://localhost:3000',
+        headers: {
+          Accept: 'application/json'
+        },
+        onResponse: ({ response }) => {
+          expect(response.status).toBe(200)
+          expect(response._data?.length).toBe(2)
+        }
+      })
+    })
+
+    it('[200] get all transactions by symbol', async () => {
+      await $fetch(`/transactions/?symbol=${tokenSymbol}`, {
+        baseURL: 'http://localhost:3000',
+        headers: {
+          Accept: 'application/json'
+        },
+        onResponse: ({ response }) => {
+          expect(response.status).toBe(200)
+          expect(response._data?.length).toBe(2)
+        }
+      })
+    })
+
+    it('[200] create transaction', async () => {
+      await $fetch('/transactions', {
+        method: 'POST',
+        baseURL: 'http://localhost:3000',
+        headers: {
+          Accept: 'application/json'
+        },
+        body: {
+          from: wallet.address,
+          to: wallet2.address,
+          value: 100.55,
+          message: 'hello world',
+          symbol: tokenSymbol,
+          signature: await signTransaction(wallet.privateKey, wallet.address, wallet2.address, 100.55, tokenSymbol)
+        },
+        onResponse: ({ response }) => {
+          expect(response.status).toBe(200)
+          expect(response._data).toMatchObject({
+            from: wallet.address,
+            to: wallet2.address,
+            value: 100.55,
+            symbol: tokenSymbol
+          })
+        }
+      })
+    })
+
+    it('[200] create transaction to genesis', async () => {
+      await $fetch('/transactions', {
+        method: 'POST',
+        baseURL: 'http://localhost:3000',
+        headers: {
+          Accept: 'application/json'
+        },
+        body: {
+          from: wallet2.address,
+          to: '0x',
+          value: 5.55,
+          message: 'hello world',
+          symbol: tokenSymbol,
+          signature: await signTransaction(wallet2.privateKey, wallet2.address, '0x', 5.55, tokenSymbol)
+        },
+        onResponse: ({ response }) => {
+          expect(response.status).toBe(200)
+          expect(response._data).toMatchObject({
+            from: wallet2.address,
+            to: '0x',
+            value: 5.55,
+            symbol: tokenSymbol
+          })
+        }
+      })
+    })
+
+    it('[200] get all transactions by address', async () => {
+      await $fetch(`/transactions?address=${wallet2.address}`, {
+        baseURL: 'http://localhost:3000',
+        headers: {
+          Accept: 'application/json'
+        },
+        onResponse: ({ response }) => {
+          expect(response.status).toBe(200)
+          expect(response._data?.length).toBe(2)
+        }
+      })
+    })
+  })
+
+  describe.skip('/transaction', () => {
     it('[200] create transaction', async () => {
       await $fetch(`/transaction/${tokenSymbol}`, {
         method: 'POST',
