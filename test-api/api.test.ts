@@ -13,46 +13,16 @@ describe('API', () => {
 
   let tokenId = ''
 
-  describe.skip('/wallet', () => {
-    it('[200] generate new wallet', async () => {
-      await $fetch('/wallet', {
+  describe('/ballance', () => {
+    it('[200] get zero ballance', async () => {
+      await $fetch(`/ballance/${wallet.address}`, {
         baseURL: 'http://localhost:3000',
         headers: {
           Accept: 'application/json'
         },
         onResponse: ({ response }) => {
           expect(response.status).toBe(200)
-          expect(response._data).toMatchObject({
-            provider: null,
-            address: expect.any(String),
-            publicKey: expect.any(String),
-            privateKey: expect.any(String),
-            fingerprint: expect.any(String),
-            parentFingerprint: expect.any(String),
-            mnemonic: {
-              phrase: expect.any(String),
-              password: ''
-            },
-            chainCode: expect.any(String),
-            path: "m/44'/60'/0'/0/0",
-            index: 0,
-            depth: 5
-          })
-          wallet.privateKey = response._data.privateKey
-          wallet.address = response._data.address
-        }
-      })
-    })
-
-    it('[200] get ballance', async () => {
-      await $fetch(`/wallet/${wallet.address}`, {
-        baseURL: 'http://localhost:3000',
-        headers: {
-          Accept: 'application/json'
-        },
-        onResponse: ({ response }) => {
-          expect(response.status).toBe(200)
-          expect(response._data).toMatchObject(expect.any(Object))
+          expect(JSON.stringify(response._data)).toBe('{}')
         }
       })
     })
@@ -399,58 +369,32 @@ describe('API', () => {
     })
   })
 
-  describe.skip('/transaction', () => {
-    it('[200] create transaction', async () => {
-      await $fetch(`/transaction/${tokenSymbol}`, {
-        method: 'POST',
-        baseURL: 'http://localhost:3000',
-        headers: {
-          Accept: 'application/json'
-        },
-        body: {
-          from: wallet.address,
-          to: '0x',
-          value: 100,
-          message: 'hello world',
-          signature: await signTransaction(wallet.privateKey, wallet.address, '0x', 100, tokenSymbol)
-        },
-        onResponse: ({ response }) => {
-          expect(response.status).toBe(200)
-          expect(response._data).toMatchObject({
-            from: wallet.address,
-            to: '0x',
-            value: 100,
-            symbol: tokenSymbol
-          })
-        }
-      })
-    })
-    it('[200] get all transactions', async () => {
-      await $fetch('/transaction/TST', {
+  describe('/ballance', () => {
+    it('[200] get ballance wallet1', async () => {
+      await $fetch(`/ballance/${wallet.address}`, {
         baseURL: 'http://localhost:3000',
         headers: {
           Accept: 'application/json'
         },
         onResponse: ({ response }) => {
           expect(response.status).toBe(200)
-          expect(response._data).toBeInstanceOf(Array)
-          expect(response._data.length).toBe(3)
+          expect(response._data[tokenSymbol]).toBe(3121.45)
+          expect(response._data[tokenSymbol2]).toBe(1000)
         }
       })
     })
+  })
 
-    it('get all transactions by address', async () => {
-      await $fetch(`/transaction/address/${wallet.address}`, {
-        baseURL: 'http://localhost:3000',
-        headers: {
-          Accept: 'application/json'
-        },
-        onResponse: ({ response }) => {
-          expect(response.status).toBe(200)
-          expect(response._data).toBeInstanceOf(Array)
-          expect(response._data.length).toBe(4)
-        }
-      })
+  it('[200] get ballance wallet2', async () => {
+    await $fetch(`/ballance/${wallet2.address}`, {
+      baseURL: 'http://localhost:3000',
+      headers: {
+        Accept: 'application/json'
+      },
+      onResponse: ({ response }) => {
+        expect(response.status).toBe(200)
+        expect(response._data[tokenSymbol]).toBe(95)
+      }
     })
   })
 })
