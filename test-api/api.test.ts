@@ -8,8 +8,14 @@ describe('API', () => {
   const tokenEmission = 1000
   const tokenDescription = 'Test Token Description'
 
+
+  const tokenName2 = 'Test Token 2'
+  const tokenSymbol2 = 'ABC'
+  const tokenEmission2 = 1000
+  const tokenDescription2 = 'Test Token Description 2'
+
   let tokenId = ''
-  let signature = ''
+  const signature = ''
   const transactionId = ''
 
   describe('/wallet', () => {
@@ -138,6 +144,99 @@ describe('API', () => {
             symbol: tokenSymbol,
             value: 2222
           })
+        }
+      })
+    })
+
+    it('[200] create one more token', async () => {
+      await $fetch('/token', {
+        method: 'POST',
+        baseURL: 'http://localhost:3000',
+        headers: {
+          Accept: 'application/json'
+        },
+        body: {
+          name: tokenName2,
+          symbol: tokenSymbol2,
+          address: wallet.address,
+          emission: tokenEmission2,
+          description: tokenDescription2,
+          signature: await signToken(wallet.privateKey, tokenName2, wallet.address, tokenEmission2, tokenSymbol2)
+        },
+        onResponse: ({ response }) => {
+          expect(response.status).toBe(200)
+          expect(response._data).toMatchObject({
+            address: wallet.address,
+            name: tokenName2,
+            symbol: tokenSymbol2,
+            description: tokenDescription2
+          })
+        }
+      })
+    })
+
+    it('[200] get all tokens DESC', async () => {
+      await $fetch('/token', {
+        baseURL: 'http://localhost:3000',
+        headers: {
+          Accept: 'application/json'
+        },
+        onResponse: ({ response }) => {
+          expect(response.status).toBe(200)
+          expect(response._data?.[0].symbol).toBe(tokenSymbol2)
+        }
+      })
+    })
+
+    it('[200] get all tokens order==ASC', async () => {
+      await $fetch('/token?order=asc', {
+        baseURL: 'http://localhost:3000',
+        headers: {
+          Accept: 'application/json'
+        },
+        onResponse: ({ response }) => {
+          expect(response.status).toBe(200)
+          expect(response._data?.[0].symbol).toBe(tokenSymbol)
+        }
+      })
+    })
+
+    it('[200] get all tokens limit==10', async () => {
+      await $fetch('/token?limit=10', {
+        baseURL: 'http://localhost:3000',
+        headers: {
+          Accept: 'application/json'
+        },
+        onResponse: ({ response }) => {
+          expect(response.status).toBe(200)
+          expect(response._data.length).toBe(2)
+        }
+      })
+    })
+
+    it('[200] get all tokens limit==1', async () => {
+      await $fetch('/token?limit=1', {
+        baseURL: 'http://localhost:3000',
+        headers: {
+          Accept: 'application/json'
+        },
+        onResponse: ({ response }) => {
+          expect(response.status).toBe(200)
+          expect(response._data.length).toBe(1)
+        }
+      })
+    })
+
+    it('[200] get all tokens offset==1', async () => {
+      await $fetch('/token?offset=1', {
+        baseURL: 'http://localhost:3000',
+        headers: {
+          Accept: 'application/json'
+        },
+        onResponse: ({ response }) => {
+          expect(response.status).toBe(200)
+          expect(response._data?.[0].symbol).toBe(tokenSymbol)
+          expect(response._data.length).toBe(1)
         }
       })
     })
