@@ -13,7 +13,8 @@ export default defineConfig({
         { name: 'afterAll', from: 'vitest' },
         { name: '$fetch', from: 'ofetch' },
         { name: 'v4', as: 'uuidv4', from: 'uuid' },
-        { name: 'parse', from: 'set-cookie-parser' }
+        { name: 'parse', from: 'set-cookie-parser' },
+        { name: 'Wallet', from: 'ethers' }
       ],
       dirs: ['./utils'],
       dts: true
