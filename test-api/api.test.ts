@@ -367,6 +367,151 @@ describe('API', () => {
         }
       })
     })
+
+    it('[200] get transactions summary', async () => {
+      await $fetch('/transactions/summary', {
+        baseURL: 'http://localhost:3000',
+        headers: {
+          Accept: 'application/json'
+        },
+        onResponse: ({ response }) => {
+          expect(response.status).toBe(200)
+          expect(response._data).toMatchObject({
+            totalTransactions: expect.any(Number),
+            totalValue: expect.any(Number),
+            avgValue: expect.any(Number),
+            uniqueSendersCount: expect.any(Number),
+            uniqueReceiversCount: expect.any(Number),
+            symbolsCount: expect.any(Number),
+            symbols: expect.any(Array)
+          })
+          expect(response._data.totalTransactions).toBeGreaterThan(0)
+          expect(response._data.symbolsCount).toBeGreaterThan(0)
+        }
+      })
+    })
+
+    it('[200] get transactions summary by symbol', async () => {
+      await $fetch(`/transactions/summary?symbol=${tokenSymbol}`, {
+        baseURL: 'http://localhost:3000',
+        headers: {
+          Accept: 'application/json'
+        },
+        onResponse: ({ response }) => {
+          expect(response.status).toBe(200)
+          expect(response._data).toMatchObject({
+            totalTransactions: expect.any(Number),
+            totalValue: expect.any(Number),
+            avgValue: expect.any(Number),
+            uniqueSendersCount: expect.any(Number),
+            uniqueReceiversCount: expect.any(Number),
+            symbolsCount: 1,
+            symbols: [tokenSymbol]
+          })
+          expect(response._data.totalTransactions).toBeGreaterThan(0)
+        }
+      })
+    })
+
+    it('[200] get transactions stats', async () => {
+      await $fetch('/transactions/stats', {
+        baseURL: 'http://localhost:3000',
+        headers: {
+          Accept: 'application/json'
+        },
+        onResponse: ({ response }) => {
+          expect(response.status).toBe(200)
+          expect(response._data).toMatchObject({
+            total: {
+              totalTransactions: expect.any(Number),
+              totalValue: expect.any(Number),
+              avgValue: expect.any(Number),
+              minValue: expect.any(Number),
+              maxValue: expect.any(Number)
+            },
+            bySymbol: expect.any(Array),
+            topSenders: expect.any(Array),
+            topReceivers: expect.any(Array),
+            daily: expect.any(Array),
+            filters: expect.any(Object)
+          })
+          expect(response._data.total.totalTransactions).toBeGreaterThan(0)
+          expect(response._data.bySymbol.length).toBeGreaterThan(0)
+          expect(response._data.topSenders.length).toBeGreaterThan(0)
+          expect(response._data.topReceivers.length).toBeGreaterThan(0)
+        }
+      })
+    })
+
+    it('[200] get transactions stats with symbol filter', async () => {
+      await $fetch(`/transactions/stats?symbol=${tokenSymbol}&limit=5`, {
+        baseURL: 'http://localhost:3000',
+        headers: {
+          Accept: 'application/json'
+        },
+        onResponse: ({ response }) => {
+          expect(response.status).toBe(200)
+          expect(response._data.filters.symbol).toBe(tokenSymbol)
+          expect(response._data.filters.limit).toBe('5')
+          expect(response._data.bySymbol.length).toBe(1)
+          expect(response._data.bySymbol[0]._id).toBe(tokenSymbol)
+          expect(response._data.topSenders.length).toBeLessThanOrEqual(5)
+          expect(response._data.topReceivers.length).toBeLessThanOrEqual(5)
+        }
+      })
+    })
+
+    it('[200] get transactions stats with date range', async () => {
+      const now = Date.now()
+      const hourAgo = now - (60 * 60 * 1000) // 1 час назад
+
+      await $fetch(`/transactions/stats?from=${hourAgo}&to=${now}`, {
+        baseURL: 'http://localhost:3000',
+        headers: {
+          Accept: 'application/json'
+        },
+        onResponse: ({ response }) => {
+          expect(response.status).toBe(200)
+          expect(response._data.filters.dateFrom).toBe(hourAgo.toString())
+          expect(response._data.filters.dateTo).toBe(now.toString())
+          expect(response._data.total.totalTransactions).toBeGreaterThan(0)
+        }
+      })
+    })
+
+    it('[200] get transactions stats with empty result', async () => {
+      const futureDate = Date.now() + (24 * 60 * 60 * 1000) // завтра
+
+      await $fetch(`/transactions/stats?from=${futureDate}`, {
+        baseURL: 'http://localhost:3000',
+        headers: {
+          Accept: 'application/json'
+        },
+        onResponse: ({ response }) => {
+          expect(response.status).toBe(200)
+          expect(response._data.total.totalTransactions).toBe(0)
+          expect(response._data.bySymbol.length).toBe(0)
+          expect(response._data.topSenders.length).toBe(0)
+          expect(response._data.topReceivers.length).toBe(0)
+        }
+      })
+    })
+
+    it('[200] get summary with non-existent symbol', async () => {
+      await $fetch('/transactions/summary?symbol=NONEXISTENT', {
+        baseURL: 'http://localhost:3000',
+        headers: {
+          Accept: 'application/json'
+        },
+        onResponse: ({ response }) => {
+          expect(response.status).toBe(200)
+          expect(response._data.totalTransactions).toBe(0)
+          expect(response._data.totalValue).toBe(0)
+          expect(response._data.symbolsCount).toBe(0)
+          expect(response._data.symbols).toEqual([])
+        }
+      })
+    })
   })
 
   describe('/ballance', () => {

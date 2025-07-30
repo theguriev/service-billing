@@ -396,6 +396,96 @@
           }
         }
       }
+    },
+    "/transactions/stats": {
+      "get": {
+        "summary": "Get Transaction Statistics",
+        "description": "Retrieves detailed statistics about transactions with filtering options",
+        "operationId": "getTransactionStats",
+        "parameters": [
+          {
+            "name": "from",
+            "in": "query",
+            "description": "Start date filter (timestamp in milliseconds)",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "description": "End date filter (timestamp in milliseconds)",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "symbol",
+            "in": "query",
+            "description": "Filter by token symbol",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "Limit for top lists (senders, receivers)",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 10
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TransactionStats"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/transactions/summary": {
+      "get": {
+        "summary": "Get Transaction Summary",
+        "description": "Retrieves a quick summary of transaction metrics for dashboard display",
+        "operationId": "getTransactionSummary",
+        "parameters": [
+          {
+            "name": "symbol",
+            "in": "query",
+            "description": "Filter by token symbol",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TransactionSummary"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -614,6 +704,177 @@
           },
           "value": {
             "type": "integer"
+          }
+        }
+      },
+      "TransactionStats": {
+        "type": "object",
+        "properties": {
+          "total": {
+            "type": "object",
+            "properties": {
+              "totalTransactions": {
+                "type": "integer",
+                "description": "Total number of transactions"
+              },
+              "totalValue": {
+                "type": "number",
+                "description": "Total value of all transactions"
+              },
+              "avgValue": {
+                "type": "number",
+                "description": "Average transaction value"
+              },
+              "minValue": {
+                "type": "number",
+                "description": "Minimum transaction value"
+              },
+              "maxValue": {
+                "type": "number",
+                "description": "Maximum transaction value"
+              }
+            }
+          },
+          "bySymbol": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "_id": {
+                  "type": "string",
+                  "description": "Token symbol"
+                },
+                "count": {
+                  "type": "integer",
+                  "description": "Number of transactions for this symbol"
+                },
+                "totalValue": {
+                  "type": "number",
+                  "description": "Total value for this symbol"
+                },
+                "avgValue": {
+                  "type": "number",
+                  "description": "Average value for this symbol"
+                }
+              }
+            }
+          },
+          "topSenders": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "_id": {
+                  "type": "string",
+                  "description": "Sender address"
+                },
+                "count": {
+                  "type": "integer",
+                  "description": "Number of transactions sent"
+                },
+                "totalSent": {
+                  "type": "number",
+                  "description": "Total value sent"
+                }
+              }
+            }
+          },
+          "topReceivers": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "_id": {
+                  "type": "string",
+                  "description": "Receiver address"
+                },
+                "count": {
+                  "type": "integer",
+                  "description": "Number of transactions received"
+                },
+                "totalReceived": {
+                  "type": "number",
+                  "description": "Total value received"
+                }
+              }
+            }
+          },
+          "daily": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "_id": {
+                  "type": "string",
+                  "description": "Date in YYYY-MM-DD format"
+                },
+                "count": {
+                  "type": "integer",
+                  "description": "Number of transactions on this date"
+                },
+                "totalValue": {
+                  "type": "number",
+                  "description": "Total value of transactions on this date"
+                }
+              }
+            }
+          },
+          "filters": {
+            "type": "object",
+            "properties": {
+              "dateFrom": {
+                "type": "string",
+                "description": "Applied from date filter"
+              },
+              "dateTo": {
+                "type": "string",
+                "description": "Applied to date filter"
+              },
+              "symbol": {
+                "type": "string",
+                "description": "Applied symbol filter"
+              },
+              "limit": {
+                "type": "string",
+                "description": "Applied limit for top lists"
+              }
+            }
+          }
+        }
+      },
+      "TransactionSummary": {
+        "type": "object",
+        "properties": {
+          "totalTransactions": {
+            "type": "integer",
+            "description": "Total number of transactions"
+          },
+          "totalValue": {
+            "type": "number",
+            "description": "Total value of all transactions"
+          },
+          "avgValue": {
+            "type": "number",
+            "description": "Average transaction value (rounded to 2 decimal places)"
+          },
+          "uniqueSendersCount": {
+            "type": "integer",
+            "description": "Number of unique sender addresses"
+          },
+          "uniqueReceiversCount": {
+            "type": "integer",
+            "description": "Number of unique receiver addresses"
+          },
+          "symbolsCount": {
+            "type": "integer",
+            "description": "Number of unique token symbols"
+          },
+          "symbols": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "List of unique token symbols"
           }
         }
       },
