@@ -1,7 +1,15 @@
 export default eventHandler(async (event) => {
-  const { symbol } = getQuery(event)
+  const { symbol, address } = getQuery(event)
 
-  const matchFilter: any = symbol ? { symbol } : {}
+  const matchFilter: any = {}
+  
+  if (symbol) {
+    matchFilter.symbol = symbol
+  }
+  
+  if (address) {
+    matchFilter.$or = [{ from: address }, { to: address }]
+  }
 
   // Простая агрегация для быстрого отображения основных метрик
   const pipeline: any[] = [

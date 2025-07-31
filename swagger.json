@@ -441,6 +441,15 @@
               "type": "integer",
               "default": 10
             }
+          },
+          {
+            "name": "address",
+            "in": "query",
+            "description": "Filter by address (transactions from or to this address)",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
           }
         ],
         "responses": {
@@ -467,6 +476,15 @@
             "name": "symbol",
             "in": "query",
             "description": "Filter by token symbol",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "address",
+            "in": "query",
+            "description": "Filter by address (transactions from or to this address)",
             "required": false,
             "schema": {
               "type": "string"
@@ -833,6 +851,10 @@
               "symbol": {
                 "type": "string",
                 "description": "Applied symbol filter"
+              },
+              "address": {
+                "type": "string",
+                "description": "Applied address filter"
               },
               "limit": {
                 "type": "string",

@@ -3,6 +3,7 @@ export default eventHandler(async (event) => {
     from: dateFrom,
     to: dateTo,
     symbol,
+    address,
     limit = 10
   } = getQuery(event)
 
@@ -23,6 +24,11 @@ export default eventHandler(async (event) => {
   // Фильтр по символу
   if (symbol) {
     matchFilter.symbol = symbol
+  }
+
+  // Фильтр по адресу (from или to)
+  if (address) {
+    matchFilter.$or = [{ from: address }, { to: address }]
   }
 
   // Агрегация для получения статистики
@@ -123,6 +129,7 @@ export default eventHandler(async (event) => {
       dateFrom,
       dateTo,
       symbol,
+      address,
       limit
     }
   }

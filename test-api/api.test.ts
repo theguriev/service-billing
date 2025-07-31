@@ -512,6 +512,55 @@ describe('API', () => {
         }
       })
     })
+
+    it('[200] get transactions stats with address filter', async () => {
+      await $fetch(`/transactions/stats?address=${wallet.address}&limit=5`, {
+        baseURL: 'http://localhost:3000',
+        headers: {
+          Accept: 'application/json'
+        },
+        onResponse: ({ response }) => {
+          expect(response.status).toBe(200)
+          expect(response._data.filters.address).toBe(wallet.address)
+          expect(response._data.filters.limit).toBe('5')
+          expect(response._data.total.totalTransactions).toBeGreaterThan(0)
+          // Проверяем, что все транзакции связаны с указанным адресом
+          expect(response._data.topSenders.length).toBeGreaterThan(0)
+          expect(response._data.topReceivers.length).toBeGreaterThan(0)
+        }
+      })
+    })
+
+    it('[200] get transactions summary with address filter', async () => {
+      await $fetch(`/transactions/summary?address=${wallet2.address}`, {
+        baseURL: 'http://localhost:3000',
+        headers: {
+          Accept: 'application/json'
+        },
+        onResponse: ({ response }) => {
+          expect(response.status).toBe(200)
+          expect(response._data.totalTransactions).toBeGreaterThan(0)
+          expect(response._data.uniqueSendersCount).toBeGreaterThan(0)
+          expect(response._data.uniqueReceiversCount).toBeGreaterThan(0)
+        }
+      })
+    })
+
+    it('[200] get stats with combined filters (address + symbol)', async () => {
+      await $fetch(`/transactions/stats?address=${wallet.address}&symbol=${tokenSymbol}`, {
+        baseURL: 'http://localhost:3000',
+        headers: {
+          Accept: 'application/json'
+        },
+        onResponse: ({ response }) => {
+          expect(response.status).toBe(200)
+          expect(response._data.filters.address).toBe(wallet.address)
+          expect(response._data.filters.symbol).toBe(tokenSymbol)
+          expect(response._data.bySymbol.length).toBe(1)
+          expect(response._data.bySymbol[0]._id).toBe(tokenSymbol)
+        }
+      })
+    })
   })
 
   describe('/ballance', () => {
