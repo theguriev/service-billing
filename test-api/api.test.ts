@@ -368,6 +368,88 @@ describe('API', () => {
       })
     })
 
+    it('[200] get transactions by date range', async () => {
+      const now = Date.now()
+      const hourAgo = now - (60 * 60 * 1000) // 1 час назад
+
+      await $fetch(`/transactions?from=${hourAgo}&to=${now}`, {
+        baseURL: 'http://localhost:3000',
+        headers: {
+          Accept: 'application/json'
+        },
+        onResponse: ({ response }) => {
+          expect(response.status).toBe(200)
+          expect(response._data).toBeInstanceOf(Array)
+          // Проверяем, что все транзакции в указанном диапазоне
+          response._data.forEach((transaction: any) => {
+            expect(transaction.timestamp).toBeGreaterThanOrEqual(hourAgo)
+            expect(transaction.timestamp).toBeLessThanOrEqual(now)
+          })
+        }
+      })
+    })
+
+    it('[200] get transactions from specific date', async () => {
+      const hourAgo = Date.now() - (60 * 60 * 1000)
+
+      await $fetch(`/transactions?from=${hourAgo}`, {
+        baseURL: 'http://localhost:3000',
+        headers: {
+          Accept: 'application/json'
+        },
+        onResponse: ({ response }) => {
+          expect(response.status).toBe(200)
+          expect(response._data).toBeInstanceOf(Array)
+          // Все транзакции должны быть после указанной даты
+          response._data.forEach((transaction: any) => {
+            expect(transaction.timestamp).toBeGreaterThanOrEqual(hourAgo)
+          })
+        }
+      })
+    })
+
+    it('[200] get transactions until specific date', async () => {
+      const now = Date.now()
+
+      await $fetch(`/transactions?to=${now}`, {
+        baseURL: 'http://localhost:3000',
+        headers: {
+          Accept: 'application/json'
+        },
+        onResponse: ({ response }) => {
+          expect(response.status).toBe(200)
+          expect(response._data).toBeInstanceOf(Array)
+          // Все транзакции должны быть до указанной даты
+          response._data.forEach((transaction: any) => {
+            expect(transaction.timestamp).toBeLessThanOrEqual(now)
+          })
+        }
+      })
+    })
+
+    it('[200] get transactions with combined filters', async () => {
+      const now = Date.now()
+      const hourAgo = now - (60 * 60 * 1000)
+
+      await $fetch(`/transactions?symbol=${tokenSymbol}&address=${wallet.address}&from=${hourAgo}&to=${now}`, {
+        baseURL: 'http://localhost:3000',
+        headers: {
+          Accept: 'application/json'
+        },
+        onResponse: ({ response }) => {
+          expect(response.status).toBe(200)
+          expect(response._data).toBeInstanceOf(Array)
+          // Проверяем все фильтры
+          response._data.forEach((transaction: any) => {
+            expect(transaction.symbol).toBe(tokenSymbol)
+            expect([transaction.from, transaction.to]).toContain(wallet.address)
+            expect(transaction.timestamp).toBeGreaterThanOrEqual(hourAgo)
+            expect(transaction.timestamp).toBeLessThanOrEqual(now)
+          })
+        }
+      })
+    })
+
     it('[200] get transactions summary', async () => {
       await $fetch('/transactions/summary', {
         baseURL: 'http://localhost:3000',
