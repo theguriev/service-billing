@@ -2,11 +2,11 @@ export default eventHandler(async (event) => {
   const { symbol, address } = getQuery(event)
 
   const matchFilter: any = {}
-  
+
   if (symbol) {
     matchFilter.symbol = symbol
   }
-  
+
   if (address) {
     matchFilter.$or = [{ from: address }, { to: address }]
   }
