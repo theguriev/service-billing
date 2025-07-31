@@ -861,6 +861,74 @@
                 "description": "Applied limit for top lists"
               }
             }
+          },
+          "sent": {
+            "type": "object",
+            "description": "Statistics for sent transactions (only when address filter is applied)",
+            "properties": {
+              "bySymbol": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "_id": {
+                      "type": "string",
+                      "description": "Token symbol"
+                    },
+                    "count": {
+                      "type": "integer",
+                      "description": "Number of sent transactions"
+                    },
+                    "totalValue": {
+                      "type": "number",
+                      "description": "Total value sent"
+                    }
+                  }
+                }
+              },
+              "totalTransactions": {
+                "type": "integer",
+                "description": "Total number of sent transactions"
+              },
+              "totalValue": {
+                "type": "number",
+                "description": "Total value of sent transactions"
+              }
+            }
+          },
+          "received": {
+            "type": "object",
+            "description": "Statistics for received transactions (only when address filter is applied)",
+            "properties": {
+              "bySymbol": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "_id": {
+                      "type": "string",
+                      "description": "Token symbol"
+                    },
+                    "count": {
+                      "type": "integer",
+                      "description": "Number of received transactions"
+                    },
+                    "totalValue": {
+                      "type": "number",
+                      "description": "Total value received"
+                    }
+                  }
+                }
+              },
+              "totalTransactions": {
+                "type": "integer",
+                "description": "Total number of received transactions"
+              },
+              "totalValue": {
+                "type": "number",
+                "description": "Total value of received transactions"
+              }
+            }
           }
         }
       },
@@ -897,6 +965,74 @@
               "type": "string"
             },
             "description": "List of unique token symbols"
+          },
+          "sent": {
+            "type": "object",
+            "description": "Statistics for sent transactions (only when address filter is applied)",
+            "properties": {
+              "bySymbol": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "_id": {
+                      "type": "string",
+                      "description": "Token symbol"
+                    },
+                    "count": {
+                      "type": "integer",
+                      "description": "Number of sent transactions"
+                    },
+                    "totalValue": {
+                      "type": "number",
+                      "description": "Total value sent"
+                    }
+                  }
+                }
+              },
+              "totalTransactions": {
+                "type": "integer",
+                "description": "Total number of sent transactions"
+              },
+              "totalValue": {
+                "type": "number",
+                "description": "Total value of sent transactions"
+              }
+            }
+          },
+          "received": {
+            "type": "object",
+            "description": "Statistics for received transactions (only when address filter is applied)",
+            "properties": {
+              "bySymbol": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "_id": {
+                      "type": "string",
+                      "description": "Token symbol"
+                    },
+                    "count": {
+                      "type": "integer",
+                      "description": "Number of received transactions"
+                    },
+                    "totalValue": {
+                      "type": "number",
+                      "description": "Total value received"
+                    }
+                  }
+                }
+              },
+              "totalTransactions": {
+                "type": "integer",
+                "description": "Total number of received transactions"
+              },
+              "totalValue": {
+                "type": "number",
+                "description": "Total value of received transactions"
+              }
+            }
           }
         }
       },

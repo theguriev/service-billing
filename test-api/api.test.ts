@@ -542,6 +542,36 @@ describe('API', () => {
           expect(response._data.totalTransactions).toBeGreaterThan(0)
           expect(response._data.uniqueSendersCount).toBeGreaterThan(0)
           expect(response._data.uniqueReceiversCount).toBeGreaterThan(0)
+          expect(response._data.sent).toBeDefined()
+          expect(response._data.received).toBeDefined()
+          expect(response._data.sent.bySymbol).toBeInstanceOf(Array)
+          expect(response._data.received.bySymbol).toBeInstanceOf(Array)
+          expect(response._data.sent.totalTransactions).toBeGreaterThanOrEqual(0)
+          expect(response._data.received.totalTransactions).toBeGreaterThan(0)
+          expect(response._data.sent.totalValue).toBeGreaterThanOrEqual(0)
+          expect(response._data.received.totalValue).toBeGreaterThan(0)
+        }
+      })
+    })
+
+    it('[200] get transactions summary with address and symbol filter', async () => {
+      await $fetch(`/transactions/summary?address=${wallet.address}&symbol=${tokenSymbol}`, {
+        baseURL: 'http://localhost:3000',
+        headers: {
+          Accept: 'application/json'
+        },
+        onResponse: ({ response }) => {
+          expect(response.status).toBe(200)
+          expect(response._data.symbolsCount).toBe(1)
+          expect(response._data.symbols).toEqual([tokenSymbol])
+          expect(response._data.sent).toBeDefined()
+          expect(response._data.received).toBeDefined()
+          if (response._data.sent.bySymbol.length > 0) {
+            expect(response._data.sent.bySymbol[0]._id).toBe(tokenSymbol)
+          }
+          if (response._data.received.bySymbol.length > 0) {
+            expect(response._data.received.bySymbol[0]._id).toBe(tokenSymbol)
+          }
         }
       })
     })
@@ -558,6 +588,35 @@ describe('API', () => {
           expect(response._data.filters.symbol).toBe(tokenSymbol)
           expect(response._data.bySymbol.length).toBe(1)
           expect(response._data.bySymbol[0]._id).toBe(tokenSymbol)
+          expect(response._data.sent).toBeDefined()
+          expect(response._data.received).toBeDefined()
+          expect(response._data.sent.bySymbol).toBeInstanceOf(Array)
+          expect(response._data.received.bySymbol).toBeInstanceOf(Array)
+          expect(response._data.sent.totalTransactions).toBeGreaterThanOrEqual(0)
+          expect(response._data.received.totalTransactions).toBeGreaterThanOrEqual(0)
+        }
+      })
+    })
+
+    it('[200] get stats with address and date filters', async () => {
+      const now = Date.now()
+      const hourAgo = now - (60 * 60 * 1000) // 1 час назад
+
+      await $fetch(`/transactions/stats?address=${wallet2.address}&from=${hourAgo}&to=${now}`, {
+        baseURL: 'http://localhost:3000',
+        headers: {
+          Accept: 'application/json'
+        },
+        onResponse: ({ response }) => {
+          expect(response.status).toBe(200)
+          expect(response._data.filters.address).toBe(wallet2.address)
+          expect(response._data.filters.dateFrom).toBe(hourAgo.toString())
+          expect(response._data.filters.dateTo).toBe(now.toString())
+          // Проверяем наличие детальной статистики
+          expect(response._data.sent).toBeDefined()
+          expect(response._data.received).toBeDefined()
+          expect(response._data.sent.totalTransactions).toBeGreaterThanOrEqual(0)
+          expect(response._data.received.totalTransactions).toBeGreaterThan(0)
         }
       })
     })

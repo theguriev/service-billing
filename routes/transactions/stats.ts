@@ -113,7 +113,7 @@ export default eventHandler(async (event) => {
   const result = await ModelTransaction.aggregate(pipeline)
   const stats = result[0]
 
-  return {
+  const basicStats = {
     total: stats.totalStats[0] || {
       totalTransactions: 0,
       totalValue: 0,
@@ -133,4 +133,67 @@ export default eventHandler(async (event) => {
       limit
     }
   }
+
+  // Если указан адрес, добавляем детальную статистику по отправленным/полученным
+  if (address) {
+    // Базовый фильтр для детальной статистики
+    const detailFilter: any = {}
+    if (dateFrom || dateTo) {
+      detailFilter.timestamp = {}
+      if (dateFrom) {
+        detailFilter.timestamp.$gte = Number(dateFrom)
+      }
+      if (dateTo) {
+        detailFilter.timestamp.$lte = Number(dateTo)
+      }
+    }
+    if (symbol) {
+      detailFilter.symbol = symbol
+    }
+
+    // Статистика по отправленным транзакциям
+    const sentPipeline: any[] = [
+      { $match: { from: address, ...detailFilter } },
+      {
+        $group: {
+          _id: '$symbol',
+          count: { $sum: 1 },
+          totalValue: { $sum: '$value' }
+        }
+      }
+    ]
+
+    // Статистика по полученным транзакциям
+    const receivedPipeline: any[] = [
+      { $match: { to: address, ...detailFilter } },
+      {
+        $group: {
+          _id: '$symbol',
+          count: { $sum: 1 },
+          totalValue: { $sum: '$value' }
+        }
+      }
+    ]
+
+    const [sentStats, receivedStats] = await Promise.all([
+      ModelTransaction.aggregate(sentPipeline),
+      ModelTransaction.aggregate(receivedPipeline)
+    ])
+
+    return {
+      ...basicStats,
+      sent: {
+        bySymbol: sentStats,
+        totalTransactions: sentStats.reduce((sum, stat) => sum + stat.count, 0),
+        totalValue: sentStats.reduce((sum, stat) => sum + stat.totalValue, 0)
+      },
+      received: {
+        bySymbol: receivedStats,
+        totalTransactions: receivedStats.reduce((sum, stat) => sum + stat.count, 0),
+        totalValue: receivedStats.reduce((sum, stat) => sum + stat.totalValue, 0)
+      }
+    }
+  }
+
+  return basicStats
 })
