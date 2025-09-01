@@ -991,4 +991,218 @@ describe.sequential('API', () => {
       })
     })
   })
+
+  describe('/addresses/activity', () => {
+    it('[200] check activity for addresses with transactions', async () => {
+      await $fetch('/addresses/activity', {
+        method: 'POST',
+        baseURL: 'http://localhost:3000',
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json'
+        },
+        body: {
+          addresses: [wallet.address, wallet2.address]
+        },
+        onResponse: ({ response }) => {
+          expect(response.status).toBe(200)
+          expect(response._data).toMatchObject({
+            [wallet.address]: true, // has transactions
+            [wallet2.address]: true // has transactions
+          })
+        }
+      })
+    })
+
+    it('[200] check activity for non-existent addresses', async () => {
+      const nonExistentAddress = '0x1234567890123456789012345678901234567890'
+
+      await $fetch('/addresses/activity', {
+        method: 'POST',
+        baseURL: 'http://localhost:3000',
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json'
+        },
+        body: {
+          addresses: [nonExistentAddress]
+        },
+        onResponse: ({ response }) => {
+          expect(response.status).toBe(200)
+          expect(response._data).toEqual({
+            [nonExistentAddress]: false
+          })
+        }
+      })
+    })
+
+    it('[200] check activity for mixed addresses', async () => {
+      const nonExistentAddress = '0x1111111111111111111111111111111111111111'
+
+      await $fetch('/addresses/activity', {
+        method: 'POST',
+        baseURL: 'http://localhost:3000',
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json'
+        },
+        body: {
+          addresses: [wallet.address, nonExistentAddress, wallet2.address]
+        },
+        onResponse: ({ response }) => {
+          expect(response.status).toBe(200)
+          expect(response._data).toMatchObject({
+            [wallet.address]: true,
+            [nonExistentAddress]: false,
+            [wallet2.address]: true
+          })
+        }
+      })
+    })
+
+    it('[400] check activity - empty addresses array', async () => {
+      await $fetch('/addresses/activity', {
+        method: 'POST',
+        baseURL: 'http://localhost:3000',
+        ignoreResponseError: true,
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json'
+        },
+        body: {
+          addresses: []
+        },
+        onResponseError: ({ response }) => {
+          expect(response.status).toBe(400)
+          expect(response._data).toHaveProperty('error')
+        }
+      })
+    })
+
+    it('[400] check activity - too many addresses', async () => {
+      const manyAddresses = Array.from({ length: 101 }, (_, i) => `0x${i.toString().padStart(40, '0')}`)
+
+      await $fetch('/addresses/activity', {
+        method: 'POST',
+        baseURL: 'http://localhost:3000',
+        ignoreResponseError: true,
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json'
+        },
+        body: {
+          addresses: manyAddresses
+        },
+        onResponseError: ({ response }) => {
+          expect(response.status).toBe(400)
+          expect(response._data).toHaveProperty('error')
+        }
+      })
+    })
+
+    it('[400] check activity - missing addresses field', async () => {
+      await $fetch('/addresses/activity', {
+        method: 'POST',
+        baseURL: 'http://localhost:3000',
+        ignoreResponseError: true,
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json'
+        },
+        body: {},
+        onResponseError: ({ response }) => {
+          expect(response.status).toBe(400)
+          expect(response._data).toHaveProperty('error')
+        }
+      })
+    })
+
+    it('[400] check activity - invalid addresses type', async () => {
+      await $fetch('/addresses/activity', {
+        method: 'POST',
+        baseURL: 'http://localhost:3000',
+        ignoreResponseError: true,
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json'
+        },
+        body: {
+          addresses: 'not-an-array'
+        },
+        onResponseError: ({ response }) => {
+          expect(response.status).toBe(400)
+          expect(response._data).toHaveProperty('error')
+        }
+      })
+    })
+
+    it('[200] check activity - maximum allowed addresses', async () => {
+      // Создаем 100 адресов (максимум разрешенный)
+      const maxAddresses = Array.from({ length: 100 }, (_, i) => {
+        if (i === 0) {
+          return wallet.address
+        }
+        if (i === 1) {
+          return wallet2.address
+        }
+        return `0x${i.toString().padStart(40, '0')}`
+      })
+
+      await $fetch('/addresses/activity', {
+        method: 'POST',
+        baseURL: 'http://localhost:3000',
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json'
+        },
+        body: {
+          addresses: maxAddresses
+        },
+        onResponse: ({ response }) => {
+          expect(response.status).toBe(200)
+          expect(typeof response._data).toBe('object')
+          expect(Object.keys(response._data)).toHaveLength(100)
+
+          // Проверяем, что известные адреса активны
+          expect(response._data[wallet.address]).toBe(true)
+          expect(response._data[wallet2.address]).toBe(true)
+
+          // Проверяем, что неизвестные адреса неактивны
+          expect(response._data['0x0000000000000000000000000000000000000002']).toBe(false)
+        }
+      })
+    })
+
+    it('[200] check activity - performance test', async () => {
+      const addresses = [wallet.address, wallet2.address, wallet3.address, wallet4.address]
+      const startTime = Date.now()
+
+      await $fetch('/addresses/activity', {
+        method: 'POST',
+        baseURL: 'http://localhost:3000',
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json'
+        },
+        body: {
+          addresses
+        },
+        onResponse: ({ response }) => {
+          const endTime = Date.now()
+          const duration = endTime - startTime
+
+          expect(response.status).toBe(200)
+          // Проверяем, что запрос выполняется быстро (менее 500мс)
+          expect(duration).toBeLessThan(500)
+
+          // Проверяем структуру ответа
+          expect(Object.keys(response._data)).toHaveLength(4)
+          addresses.forEach((address) => {
+            expect(response._data).toHaveProperty(address)
+            expect(typeof response._data[address]).toBe('boolean')
+          })
+        }
+      })
+    })
+  })
 })

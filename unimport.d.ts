@@ -4,6 +4,7 @@ declare global {
   const Wallet: typeof import('ethers')['Wallet']
   const afterAll: typeof import('vitest')['afterAll']
   const beforeAll: typeof import('vitest')['beforeAll']
+  const checkAddressesActivity: typeof import('/Users/gurieveugen/work/service-billing/utils/checkAddressesActivity')['default']
   const describe: typeof import('vitest')['describe']
   const expect: typeof import('vitest')['expect']
   const getBallance: typeof import('/Users/gurieveugen/work/service-billing/utils/getBallance')['default']

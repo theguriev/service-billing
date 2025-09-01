@@ -40,7 +40,54 @@
         }
       }
     },
-    "/ballance": {
+    "/addresses/activity": {
+      "post": {
+        "summary": "Check Addresses Activity",
+        "description": "Checks if addresses have any transactions (incoming or outgoing)",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddressesActivityRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AddressesActivityResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation Error - Invalid request body",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server Error - Failed to check addresses activity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ServerError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
       "post": {
         "summary": "Get Multiple Wallet Balances",
         "description": "Retrieves wallet balances for multiple addresses in a single optimized request",
@@ -1111,7 +1158,38 @@
         },
         "description": "Balance by symbol"
       },
-      "MultipleBalanceRequest": {
+      "AddressesActivityRequest": {
+        "type": "object",
+        "required": ["addresses"],
+        "properties": {
+          "addresses": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "minItems": 1,
+            "maxItems": 100,
+            "description": "Array of wallet addresses to check for activity"
+          }
+        },
+        "example": {
+          "addresses": [
+            "1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa",
+            "1BvBMSEYstWetqTFn5Au4m4GFg7xJaNVN2"
+          ]
+        }
+      },
+      "AddressesActivityResponse": {
+        "type": "object",
+        "description": "Object mapping each address to its activity status",
+        "additionalProperties": {
+          "type": "boolean"
+        },
+        "example": {
+          "1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa": true,
+          "1BvBMSEYstWetqTFn5Au4m4GFg7xJaNVN2": false
+        }
+      },
         "type": "object",
         "properties": {
           "addresses": {
