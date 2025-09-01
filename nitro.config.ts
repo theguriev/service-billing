@@ -17,6 +17,7 @@ export default async () =>
       imports: [
         ...(await importsHelper('./db/model')),
         ...(await importsHelper('./db/schema', camelCase)),
+        ...(await importsHelper('./utils')),
         { name: 'parse', from: 'set-cookie-parser' },
         { name: 'isValidObjectId', from: 'mongoose' },
         { name: 'Wallet', from: 'ethers' }

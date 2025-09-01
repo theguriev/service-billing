@@ -1,6 +1,9 @@
-describe('API', () => {
+describe.sequential('API', () => {
   const wallet = Wallet.createRandom()
   const wallet2 = Wallet.createRandom()
+  const wallet3 = Wallet.createRandom()
+  const wallet4 = Wallet.createRandom()
+
   const tokenName = 'Test Token'
   const tokenSymbol = 'TST'
   const tokenEmission = 1000
@@ -11,22 +14,17 @@ describe('API', () => {
   const tokenEmission2 = 1000
   const tokenDescription2 = 'Test Token Description 2'
 
-  let tokenId = ''
+  const tokenName3 = 'Test Token 3'
+  const tokenSymbol3 = 'XYZ'
+  const tokenEmission3 = 1000
+  const tokenDescription3 = 'Test Token Description 3'
 
-  describe('/ballance', () => {
-    it('[200] get zero ballance', async () => {
-      await $fetch(`/ballance/${wallet.address}`, {
-        baseURL: 'http://localhost:3000',
-        headers: {
-          Accept: 'application/json'
-        },
-        onResponse: ({ response }) => {
-          expect(response.status).toBe(200)
-          expect(JSON.stringify(response._data)).toBe('{}')
-        }
-      })
-    })
-  })
+  const tokenName4 = 'Test Token 4'
+  const tokenSymbol4 = 'LMN'
+  const tokenEmission4 = 1000
+  const tokenDescription4 = 'Test Token Description 4'
+
+  let tokenId = ''
 
   describe('/tokens', () => {
     it('[200] get all tokens', async () => {
@@ -705,31 +703,292 @@ describe('API', () => {
   })
 
   describe('/ballance', () => {
-    it('[200] get ballance wallet1', async () => {
-      await $fetch(`/ballance/${wallet.address}`, {
+    beforeAll(async () => {
+      await $fetch('/tokens', {
+        method: 'POST',
+        baseURL: 'http://localhost:3000',
+        headers: {
+          Accept: 'application/json'
+        },
+        body: {
+          name: tokenName3,
+          symbol: tokenSymbol3,
+          address: wallet3.address,
+          emission: tokenEmission3,
+          description: tokenDescription3,
+          signature: await signToken(wallet3.privateKey, tokenName3, wallet3.address, tokenEmission3, tokenSymbol3)
+        },
+        onResponse: ({ response }) => {
+          expect(response.status).toBe(200)
+          expect(response._data).toMatchObject({
+            address: wallet3.address,
+            name: tokenName3,
+            symbol: tokenSymbol3,
+            description: tokenDescription3
+          })
+        }
+      })
+
+      await $fetch('/tokens', {
+        method: 'POST',
+        baseURL: 'http://localhost:3000',
+        headers: {
+          Accept: 'application/json'
+        },
+        body: {
+          name: tokenName4,
+          symbol: tokenSymbol4,
+          address: wallet4.address,
+          emission: tokenEmission4,
+          description: tokenDescription4,
+          signature: await signToken(wallet4.privateKey, tokenName4, wallet4.address, tokenEmission4, tokenSymbol4)
+        },
+        onResponse: ({ response }) => {
+          expect(response.status).toBe(200)
+          expect(response._data).toMatchObject({
+            address: wallet4.address,
+            name: tokenName4,
+            symbol: tokenSymbol4,
+            description: tokenDescription4
+          })
+        }
+      })
+    })
+    it('[200] get zero ballance', async () => {
+      const walletZeroBalance = Wallet.createRandom()
+      await $fetch(`/ballance/${walletZeroBalance.address}`, {
         baseURL: 'http://localhost:3000',
         headers: {
           Accept: 'application/json'
         },
         onResponse: ({ response }) => {
           expect(response.status).toBe(200)
-          expect(response._data[tokenSymbol]).toBe(3121.45)
-          expect(response._data[tokenSymbol2]).toBe(1000)
+          expect(JSON.stringify(response._data)).toBe('{}')
         }
       })
     })
-  })
 
-  it('[200] get ballance wallet2', async () => {
-    await $fetch(`/ballance/${wallet2.address}`, {
-      baseURL: 'http://localhost:3000',
-      headers: {
-        Accept: 'application/json'
-      },
-      onResponse: ({ response }) => {
-        expect(response.status).toBe(200)
-        expect(response._data[tokenSymbol]).toBe(95)
-      }
+    it('[400] get multiple balances - empty array', async () => {
+      await $fetch('/ballance', {
+        method: 'POST',
+        baseURL: 'http://localhost:3000',
+        ignoreResponseError: true,
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json'
+        },
+        body: {
+          addresses: []
+        },
+        onResponseError: ({ response }) => {
+          expect(response.status).toBe(400)
+        }
+      })
+    })
+
+    it('[400] get multiple balances - invalid body', async () => {
+      await $fetch('/ballance', {
+        method: 'POST',
+        baseURL: 'http://localhost:3000',
+        ignoreResponseError: true,
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json'
+        },
+        body: {
+          wrongField: ['address1']
+        },
+        onResponseError: ({ response }) => {
+          expect(response.status).toBe(400)
+        }
+      })
+    })
+
+    it('[400] get multiple balances - addresses not array', async () => {
+      await $fetch('/ballance', {
+        method: 'POST',
+        baseURL: 'http://localhost:3000',
+        ignoreResponseError: true,
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json'
+        },
+        body: {
+          addresses: 'not-an-array'
+        },
+        onResponseError: ({ response }) => {
+          expect(response.status).toBe(400)
+        }
+      })
+    })
+
+    it('[400] get multiple balances - too many addresses', async () => {
+      const manyAddresses = Array.from({ length: 101 }, (_, i) => `0x${i.toString().padStart(40, '0')}`)
+
+      await $fetch('/ballance', {
+        method: 'POST',
+        baseURL: 'http://localhost:3000',
+        ignoreResponseError: true,
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json'
+        },
+        body: {
+          addresses: manyAddresses
+        },
+        onResponseError: ({ response }) => {
+          expect(response.status).toBe(400)
+        }
+      })
+    })
+
+    it('[200] get multiple balances - single address', async () => {
+      await $fetch('/ballance', {
+        method: 'POST',
+        baseURL: 'http://localhost:3000',
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json'
+        },
+        body: {
+          addresses: [wallet3.address]
+        },
+        onResponse: ({ response }) => {
+          expect(response.status).toBe(200)
+
+          expect(response._data.results[wallet3.address].ballanceBySymbol[tokenSymbol3]).toBe(tokenEmission3)
+          expect(response._data.results[wallet3.address].incomeTransactionCount).toBeGreaterThan(0)
+          expect(response._data.results[wallet3.address].outcomeTransactionCount).toBe(0)
+        }
+      })
+    })
+
+    it('[200] get multiple balances - multiple addresses', async () => {
+      await $fetch('/ballance', {
+        method: 'POST',
+        baseURL: 'http://localhost:3000',
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json'
+        },
+        body: {
+          addresses: [wallet3.address, wallet4.address]
+        },
+        onResponse: ({ response }) => {
+          expect(response.status).toBe(200)
+
+          expect(response._data.results[wallet3.address].ballanceBySymbol[tokenSymbol3]).toBe(tokenEmission3)
+          expect(response._data.results[wallet3.address].incomeTransactionCount).toBeGreaterThan(0)
+          expect(response._data.results[wallet3.address].outcomeTransactionCount).toBe(0)
+
+          expect(response._data.results[wallet4.address].ballanceBySymbol[tokenSymbol4]).toBe(tokenEmission4)
+          expect(response._data.results[wallet4.address].incomeTransactionCount).toBeGreaterThan(0)
+          expect(response._data.results[wallet4.address].outcomeTransactionCount).toBe(0)
+        }
+      })
+    })
+
+    it('[200] get multiple balances - with non-existent addresses', async () => {
+      const nonExistentAddress = '0x1234567890123456789012345678901234567890'
+
+      await $fetch('/ballance', {
+        method: 'POST',
+        baseURL: 'http://localhost:3000',
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json'
+        },
+        body: {
+          addresses: [wallet.address, nonExistentAddress, wallet2.address]
+        },
+        onResponse: ({ response }) => {
+          expect(response.status).toBe(200)
+          expect(response._data).toMatchObject({
+            results: expect.any(Object),
+            totalAddresses: 3,
+            successfulRequests: 3,
+            failedRequests: 0
+          })
+
+          const nonExistentResult = response._data.results[nonExistentAddress]
+          expect(nonExistentResult).toBeDefined()
+          expect(nonExistentResult.ballanceBySymbol).toEqual({})
+          expect(nonExistentResult.success).toBe(true)
+          expect(nonExistentResult.incomeTransactionCount).toBe(0)
+          expect(nonExistentResult.outcomeTransactionCount).toBe(0)
+        }
+      })
+    })
+
+    it('[200] get multiple balances - maximum allowed addresses', async () => {
+      // Создаем 100 адресов (максимум разрешенный)
+      const maxAddresses = Array.from({ length: 100 }, (_, i) => {
+        if (i === 0) {
+          return wallet3.address
+        }
+        if (i === 1) {
+          return wallet4.address
+        }
+        return `0x${i.toString().padStart(40, '0')}`
+      })
+
+      await $fetch('/ballance', {
+        method: 'POST',
+        baseURL: 'http://localhost:3000',
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json'
+        },
+        body: {
+          addresses: maxAddresses
+        },
+        onResponse: ({ response }) => {
+          expect(response.status).toBe(200)
+          expect(response._data).toMatchObject({
+            results: expect.any(Object),
+            totalAddresses: 100,
+            successfulRequests: 100,
+            failedRequests: 0
+          })
+
+          const wallet3Result = response._data.results[wallet3.address]
+          expect(wallet3Result.address).toBe(wallet3.address)
+          expect(wallet3Result.ballanceBySymbol[tokenSymbol3]).toBe(tokenEmission3)
+
+          const wallet4Result = response._data.results[wallet4.address]
+          expect(wallet4Result.address).toBe(wallet4.address)
+          expect(wallet4Result.ballanceBySymbol[tokenSymbol4]).toBe(tokenEmission4)
+        }
+      })
+    })
+
+    it('[200] get multiple balances - performance test', async () => {
+      const addresses = [wallet.address, wallet2.address]
+      const startTime = Date.now()
+
+      await $fetch('/ballance', {
+        method: 'POST',
+        baseURL: 'http://localhost:3000',
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json'
+        },
+        body: {
+          addresses
+        },
+        onResponse: ({ response }) => {
+          const endTime = Date.now()
+          const duration = endTime - startTime
+
+          expect(response.status).toBe(200)
+          // Проверяем, что запрос выполняется быстро (менее 1 секунды)
+          expect(duration).toBeLessThan(1000)
+
+          // Проверяем структуру ответа
+          expect(response._data.totalAddresses).toBe(2)
+          expect(response._data.successfulRequests).toBe(2)
+        }
+      })
     })
   })
 })

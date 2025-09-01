@@ -7,6 +7,7 @@ declare global {
   const describe: typeof import('vitest')['describe']
   const expect: typeof import('vitest')['expect']
   const getBallance: typeof import('/Users/gurieveugen/work/service-billing/utils/getBallance')['default']
+  const getBallanceMultiple: typeof import('/Users/gurieveugen/work/service-billing/utils/getBallanceMultiple')['default']
   const issue: typeof import('/Users/gurieveugen/work/service-billing/utils/issue')['default']
   const it: typeof import('vitest')['it']
   const parse: typeof import('set-cookie-parser')['parse']

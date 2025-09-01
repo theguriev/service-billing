@@ -40,6 +40,54 @@
         }
       }
     },
+    "/ballance": {
+      "post": {
+        "summary": "Get Multiple Wallet Balances",
+        "description": "Retrieves wallet balances for multiple addresses in a single optimized request",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MultipleBalanceRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MultipleBalanceResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation Error - Invalid request body",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server Error - Failed to fetch balances",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ServerError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/tokens": {
       "post": {
         "summary": "Create Token",
@@ -1062,6 +1110,168 @@
           "type": "number"
         },
         "description": "Balance by symbol"
+      },
+      "MultipleBalanceRequest": {
+        "type": "object",
+        "properties": {
+          "addresses": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "minItems": 1,
+            "maxItems": 100,
+            "description": "Array of wallet addresses (1-100 addresses)"
+          }
+        },
+        "required": ["addresses"]
+      },
+      "MultipleBalanceResponse": {
+        "type": "object",
+        "properties": {
+          "results": {
+            "type": "object",
+            "additionalProperties": {
+              "$ref": "#/components/schemas/AddressBalanceResult"
+            },
+            "description": "Object with address as key and balance result as value"
+          },
+          "totalAddresses": {
+            "type": "integer",
+            "description": "Total number of addresses requested"
+          },
+          "successfulRequests": {
+            "type": "integer",
+            "description": "Number of successfully processed addresses"
+          },
+          "failedRequests": {
+            "type": "integer",
+            "description": "Number of failed address requests"
+          }
+        },
+        "required": ["results", "totalAddresses", "successfulRequests", "failedRequests"],
+        "example": {
+          "results": {
+            "0x1234567890123456789012345678901234567890": {
+              "address": "0x1234567890123456789012345678901234567890",
+              "ballanceBySymbol": {
+                "BTC": 1.5,
+                "ETH": 3.2
+              },
+              "success": true,
+              "incomeTransactionCount": 5,
+              "outcomeTransactionCount": 2
+            },
+            "0x0987654321098765432109876543210987654321": {
+              "address": "0x0987654321098765432109876543210987654321",
+              "ballanceBySymbol": {
+                "BTC": 0.5
+              },
+              "success": true,
+              "incomeTransactionCount": 1,
+              "outcomeTransactionCount": 0
+            }
+          },
+          "totalAddresses": 2,
+          "successfulRequests": 2,
+          "failedRequests": 0
+        }
+      },
+      "AddressBalanceResult": {
+        "type": "object",
+        "properties": {
+          "address": {
+            "type": "string",
+            "description": "Wallet address"
+          },
+          "ballanceBySymbol": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "number"
+            },
+            "description": "Balance by token symbol"
+          },
+          "success": {
+            "type": "boolean",
+            "description": "Whether the balance retrieval was successful"
+          },
+          "incomeTransactionCount": {
+            "type": "integer",
+            "description": "Number of incoming transactions"
+          },
+          "outcomeTransactionCount": {
+            "type": "integer",
+            "description": "Number of outgoing transactions"
+          }
+        },
+        "required": ["address", "ballanceBySymbol", "success", "incomeTransactionCount", "outcomeTransactionCount"]
+      },
+      "ValidationError": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string",
+            "description": "Request URL"
+          },
+          "statusCode": {
+            "type": "integer",
+            "example": 400
+          },
+          "statusMessage": {
+            "type": "string",
+            "example": "Validation Error"
+          },
+          "message": {
+            "type": "string",
+            "example": "Validation Error"
+          },
+          "data": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "type": "string",
+                  "description": "Error code"
+                },
+                "message": {
+                  "type": "string",
+                  "description": "Error message"
+                },
+                "path": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  },
+                  "description": "Path to the invalid field"
+                }
+              }
+            },
+            "description": "Validation error details"
+          }
+        }
+      },
+      "ServerError": {
+        "type": "object",
+        "properties": {
+          "statusCode": {
+            "type": "integer",
+            "example": 500
+          },
+          "statusMessage": {
+            "type": "string",
+            "example": "Failed to fetch balances"
+          },
+          "data": {
+            "type": "object",
+            "properties": {
+              "error": {
+                "type": "string",
+                "description": "Error message"
+              }
+            }
+          }
+        }
       }
     }
   }
