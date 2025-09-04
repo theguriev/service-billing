@@ -31,6 +31,6 @@ export default async () =>
       dirs: ['./composables']
     },
     routeRules: {
-      '/**': { cors: true, headers: { 'access-control-allow-methods': 'GET, POST, OPTIONS, PUT, DELETE' } }
+      '/**': { cors: true, headers: { 'access-control-allow-methods': 'GET, POST, OPTIONS, PUT, DELETE', 'access-control-allow-headers': 'Content-Type, Authorization' } }
     }
   })
