@@ -88,6 +88,7 @@
         }
       }
     },
+    "/ballance": {
       "post": {
         "summary": "Get Multiple Wallet Balances",
         "description": "Retrieves wallet balances for multiple addresses in a single optimized request",
@@ -1190,6 +1191,7 @@
           "1BvBMSEYstWetqTFn5Au4m4GFg7xJaNVN2": false
         }
       },
+      "MultipleBalanceRequest": {
         "type": "object",
         "properties": {
           "addresses": {
