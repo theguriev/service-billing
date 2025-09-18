@@ -476,9 +476,27 @@
             }
           },
           {
+            "name": "fromAddress",
+            "in": "query",
+            "description": "Filter transactions by sender address",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "toAddress",
+            "in": "query",
+            "description": "Filter transactions by recipient address",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
             "name": "from",
             "in": "query",
-            "description": "Start date filter (timestamp in milliseconds)",
+            "description": "Start date filter (timestamp in milliseconds) - Note: different from fromAddress",
             "required": false,
             "schema": {
               "type": "integer",
@@ -488,7 +506,7 @@
           {
             "name": "to",
             "in": "query",
-            "description": "End date filter (timestamp in milliseconds)",
+            "description": "End date filter (timestamp in milliseconds) - Note: different from toAddress",
             "required": false,
             "schema": {
               "type": "integer",

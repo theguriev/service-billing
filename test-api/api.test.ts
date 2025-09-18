@@ -700,6 +700,94 @@ describe.sequential('API', () => {
         }
       })
     })
+
+    it('[200] get transactions filtered by fromAddress', async () => {
+      await $fetch(`/transactions?fromAddress=${wallet.address}`, {
+        baseURL: 'http://localhost:3000',
+        headers: {
+          Accept: 'application/json'
+        },
+        onResponse: ({ response }) => {
+          expect(response.status).toBe(200)
+          expect(response._data).toBeInstanceOf(Array)
+          // Проверяем, что все транзакции отправлены с указанного адреса
+          response._data.forEach((transaction: any) => {
+            expect(transaction.from).toBe(wallet.address)
+          })
+        }
+      })
+    })
+
+    it('[200] get transactions filtered by toAddress', async () => {
+      await $fetch(`/transactions?toAddress=${wallet2.address}`, {
+        baseURL: 'http://localhost:3000',
+        headers: {
+          Accept: 'application/json'
+        },
+        onResponse: ({ response }) => {
+          expect(response.status).toBe(200)
+          expect(response._data).toBeInstanceOf(Array)
+          // Проверяем, что все транзакции отправлены на указанный адрес
+          response._data.forEach((transaction: any) => {
+            expect(transaction.to).toBe(wallet2.address)
+          })
+        }
+      })
+    })
+
+    it('[200] get transactions filtered by both fromAddress and toAddress', async () => {
+      await $fetch(`/transactions?fromAddress=${wallet.address}&toAddress=${wallet2.address}`, {
+        baseURL: 'http://localhost:3000',
+        headers: {
+          Accept: 'application/json'
+        },
+        onResponse: ({ response }) => {
+          expect(response.status).toBe(200)
+          expect(response._data).toBeInstanceOf(Array)
+          // Проверяем, что все транзакции отправлены с wallet.address на wallet2.address
+          response._data.forEach((transaction: any) => {
+            expect(transaction.from).toBe(wallet.address)
+            expect(transaction.to).toBe(wallet2.address)
+          })
+        }
+      })
+    })
+
+    it('[200] get transactions with fromAddress and symbol filter', async () => {
+      await $fetch(`/transactions?fromAddress=${wallet.address}&symbol=${tokenSymbol}`, {
+        baseURL: 'http://localhost:3000',
+        headers: {
+          Accept: 'application/json'
+        },
+        onResponse: ({ response }) => {
+          expect(response.status).toBe(200)
+          expect(response._data).toBeInstanceOf(Array)
+          // Проверяем комбинированные фильтры
+          response._data.forEach((transaction: any) => {
+            expect(transaction.from).toBe(wallet.address)
+            expect(transaction.symbol).toBe(tokenSymbol)
+          })
+        }
+      })
+    })
+
+    it('[200] get transactions - address parameter takes precedence over fromAddress/toAddress', async () => {
+      // Тестируем, что если указан address, то fromAddress и toAddress игнорируются
+      await $fetch(`/transactions?address=${wallet3.address}&fromAddress=${wallet.address}&toAddress=${wallet2.address}`, {
+        baseURL: 'http://localhost:3000',
+        headers: {
+          Accept: 'application/json'
+        },
+        onResponse: ({ response }) => {
+          expect(response.status).toBe(200)
+          expect(response._data).toBeInstanceOf(Array)
+          // Проверяем, что используется только address фильтр (wallet3.address как отправитель или получатель)
+          response._data.forEach((transaction: any) => {
+            expect(transaction.from === wallet3.address || transaction.to === wallet3.address).toBe(true)
+          })
+        }
+      })
+    })
   })
 
   describe('/ballance', () => {

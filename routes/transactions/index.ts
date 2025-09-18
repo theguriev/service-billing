@@ -6,13 +6,27 @@ export default eventHandler((event) => {
     order = 'desc',
     symbol = '',
     address = '',
+    fromAddress = '',
+    toAddress = '',
     from = '',
     to = ''
   } = getQuery(event)
 
   const query: any = {
-    ...(symbol ? { symbol } : {}),
-    ...(address ? { $or: [{ to: address }, { from: address }] } : {})
+    ...(symbol ? { symbol } : {})
+  }
+
+  // Фильтры по адресам
+  if (address) {
+    query.$or = [{ to: address }, { from: address }]
+  } else {
+    // Если нет общего address, проверяем отдельные fromAddress и toAddress
+    if (fromAddress) {
+      query.from = fromAddress
+    }
+    if (toAddress) {
+      query.to = toAddress
+    }
   }
 
   // Фильтр по временному периоду
