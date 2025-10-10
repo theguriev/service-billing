@@ -7,7 +7,14 @@ const transactionSchema = new Schema({
   timestamp: Number,
   message: String,
   value: Number,
-  signature: String
+  signature: String,
+  // Добавляем idempotency key для предотвращения дубликатов
+  idempotencyKey: {
+    type: String,
+    required: false, // Опциональный для обратной совместимости
+    unique: true, // Уникальный когда присутствует
+    sparse: true // Индекс только для документов где поле существует
+  }
 })
 
 export default transactionSchema

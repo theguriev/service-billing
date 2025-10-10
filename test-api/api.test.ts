@@ -788,6 +788,84 @@ describe.sequential('API', () => {
         }
       })
     })
+
+    // Тесты для idempotency функциональности
+    it('[200] create transaction with idempotencyKey - should return same transaction for duplicate key', async () => {
+      const idempotencyKey = `test-idempotency-${Date.now()}`
+      const transactionData = {
+        from: wallet.address,
+        to: wallet2.address,
+        value: 50,
+        signature: await signTransaction(wallet.privateKey, wallet.address, wallet2.address, 50, tokenSymbol),
+        symbol: tokenSymbol,
+        idempotencyKey
+      }
+
+      // Первый запрос - создаёт транзакцию
+      const firstResponse = await $fetch('/transactions', {
+        method: 'POST',
+        baseURL: 'http://localhost:3000',
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json'
+        },
+        body: transactionData,
+        onResponse: ({ response }) => {
+          expect(response.status).toBe(200)
+          expect(response._data.idempotencyKey).toBe(idempotencyKey)
+          expect(response._data.from).toBe(wallet.address)
+          expect(response._data.to).toBe(wallet2.address)
+          expect(response._data.value).toBe(50)
+        }
+      })
+
+      // Второй запрос с тем же idempotencyKey - должен вернуть ту же транзакцию
+      await $fetch('/transactions', {
+        method: 'POST',
+        baseURL: 'http://localhost:3000',
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json'
+        },
+        body: transactionData,
+        onResponse: ({ response }) => {
+          expect(response.status).toBe(200)
+          expect(response._data._id).toBe(firstResponse._id)
+          expect(response._data.idempotencyKey).toBe(idempotencyKey)
+          expect(response._data.timestamp).toBe(firstResponse.timestamp)
+        }
+      })
+    })
+
+    it('[200] create transaction without idempotencyKey - should auto-generate based on signature', async () => {
+      const transactionData = {
+        from: wallet.address,
+        to: wallet2.address,
+        value: 25,
+        signature: await signTransaction(wallet.privateKey, wallet.address, wallet2.address, 25, tokenSymbol),
+        symbol: tokenSymbol
+        // idempotencyKey не указан - должен сгенерироваться автоматически
+      }
+
+      await $fetch('/transactions', {
+        method: 'POST',
+        baseURL: 'http://localhost:3000',
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json'
+        },
+        body: transactionData,
+        onResponse: ({ response }) => {
+          expect(response.status).toBe(200)
+          expect(response._data.idempotencyKey).toBeDefined()
+          expect(typeof response._data.idempotencyKey).toBe('string')
+          expect(response._data.idempotencyKey.length).toBeGreaterThan(0)
+          expect(response._data.from).toBe(wallet.address)
+          expect(response._data.to).toBe(wallet2.address)
+          expect(response._data.value).toBe(25)
+        }
+      })
+    })
   })
 
   describe('/ballance', () => {

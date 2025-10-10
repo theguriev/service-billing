@@ -2,7 +2,7 @@
   "openapi": "3.0.0",
   "info": {
     "title": "Blls API",
-    "description": "An API for interacting with Blls.me",
+    "description": "An API for interacting with Blls.me\n\n## Transaction Idempotency\n\nThis API supports idempotency for transaction creation to prevent duplicate transactions and ensure safe retries:\n\n- **Automatic Generation**: If no `idempotencyKey` is provided, one will be automatically generated based on the transaction signature\n- **Manual Keys**: You can provide your own `idempotencyKey` (1-64 characters) for better control\n- **Duplicate Prevention**: Transactions with the same `idempotencyKey` will return the existing transaction instead of creating a new one\n- **Backward Compatibility**: Existing clients will continue to work without modification\n\n**Example Usage:**\n```json\n{\n  \"from\": \"0x123...\",\n  \"to\": \"0x456...\",\n  \"value\": 100,\n  \"signature\": \"0xabc...\",\n  \"idempotencyKey\": \"payment-invoice-12345\"\n}\n```",
     "version": "1.0.0"
   },
   "servers": [
@@ -360,7 +360,7 @@
     "/transactions": {
       "post": {
         "summary": "Verify Signature and Perform Transaction",
-        "description": "Verifies a signature and performs a transaction for a specific symbol",
+        "description": "Verifies a signature and performs a transaction for a specific symbol. Supports idempotency to prevent duplicate transactions - if the same idempotencyKey is provided multiple times, only the first transaction will be processed and the same response will be returned for subsequent requests.",
         "requestBody": {
           "required": true,
           "content": {
@@ -373,7 +373,7 @@
         },
         "responses": {
           "200": {
-            "description": "Successful operation",
+            "description": "Successful operation - transaction created or existing transaction returned if idempotencyKey was already used",
             "content": {
               "application/json": {
                 "schema": {
@@ -383,7 +383,35 @@
             }
           },
           "400": {
-            "description": "Bad request",
+            "description": "Bad request - validation errors or insufficient funds",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "url": {
+                      "type": "string",
+                      "example": "/transactions"
+                    },
+                    "statusCode": {
+                      "type": "integer",
+                      "example": 400
+                    },
+                    "statusMessage": {
+                      "type": "string",
+                      "example": "Validation Error"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Insufficient funds or Invalid signature"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict - duplicate transaction detected (when idempotencyKey conflicts with different transaction data)",
             "content": {
               "application/json": {
                 "schema": {
@@ -399,11 +427,11 @@
                     },
                     "statusMessage": {
                       "type": "string",
-                      "example": "Validation Error"
+                      "example": "Duplicate transaction"
                     },
                     "message": {
                       "type": "string",
-                      "example": "Validation Error"
+                      "example": "Transaction with this idempotency key already exists"
                     }
                   }
                 }
@@ -796,6 +824,13 @@
             "minLength": 1,
             "maxLength": 3,
             "description": "Token symbol"
+          },
+          "idempotencyKey": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 64,
+            "description": "Optional unique key to ensure transaction idempotency and prevent duplicate transactions. If not provided, will be auto-generated based on the transaction signature. When provided, subsequent requests with the same key will return the existing transaction instead of creating a new one.",
+            "example": "user-payment-12345"
           }
         },
         "required": [
@@ -803,7 +838,16 @@
           "to",
           "value",
           "signature"
-        ]
+        ],
+        "example": {
+          "from": "0x1234567890123456789012345678901234567890",
+          "to": "0x0987654321098765432109876543210987654321",
+          "value": 100,
+          "signature": "0xabcdef1234567890...",
+          "message": "Payment for services",
+          "symbol": "BTC",
+          "idempotencyKey": "payment-invoice-12345"
+        }
       },
       "TransactionResponse": {
         "type": "object",
@@ -829,7 +873,22 @@
           },
           "value": {
             "type": "integer"
+          },
+          "idempotencyKey": {
+            "type": "string",
+            "description": "Unique identifier for this transaction used to prevent duplicates. Auto-generated if not provided in request.",
+            "example": "auto-generated-hash-abc123"
           }
+        },
+        "example": {
+          "_id": "507f1f77bcf86cd799439011",
+          "from": "0x1234567890123456789012345678901234567890",
+          "to": "0x0987654321098765432109876543210987654321",
+          "symbol": "BTC",
+          "timestamp": "2023-10-10T12:00:00.000Z",
+          "message": "Payment for services",
+          "value": 100,
+          "idempotencyKey": "payment-invoice-12345"
         }
       },
       "Transaction": {

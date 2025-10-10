@@ -7,6 +7,8 @@ declare global {
   const checkAddressesActivity: typeof import('/Users/gurieveugen/work/service-billing/utils/checkAddressesActivity')['default']
   const describe: typeof import('vitest')['describe']
   const expect: typeof import('vitest')['expect']
+  const generateIdempotencyKey: typeof import('/Users/gurieveugen/work/service-billing/utils/generateIdempotencyKey')['generateIdempotencyKey']
+  const generateIdempotencyKeyFromSignature: typeof import('/Users/gurieveugen/work/service-billing/utils/generateIdempotencyKey')['generateIdempotencyKeyFromSignature']
   const getBallance: typeof import('/Users/gurieveugen/work/service-billing/utils/getBallance')['default']
   const getBallanceMultiple: typeof import('/Users/gurieveugen/work/service-billing/utils/getBallanceMultiple')['default']
   const issue: typeof import('/Users/gurieveugen/work/service-billing/utils/issue')['default']
