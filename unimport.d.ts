@@ -11,6 +11,7 @@ declare global {
   const generateIdempotencyKeyFromSignature: typeof import('/Users/gurieveugen/work/service-billing/utils/generateIdempotencyKey')['generateIdempotencyKeyFromSignature']
   const getBallance: typeof import('/Users/gurieveugen/work/service-billing/utils/getBallance')['default']
   const getBallanceMultiple: typeof import('/Users/gurieveugen/work/service-billing/utils/getBallanceMultiple')['default']
+  const getTransactionsByAddresses: typeof import('/Users/gurieveugen/work/service-billing/utils/getTransactionsByAddresses')['getTransactionsByAddresses']
   const issue: typeof import('/Users/gurieveugen/work/service-billing/utils/issue')['default']
   const it: typeof import('vitest')['it']
   const parse: typeof import('set-cookie-parser')['parse']
@@ -21,4 +22,10 @@ declare global {
   const verifySignature: typeof import('/Users/gurieveugen/work/service-billing/utils/verifySignature')['default']
   const zodValidateBody: typeof import('/Users/gurieveugen/work/service-billing/utils/zodValidateBody')['default']
   const zodValidateData: typeof import('/Users/gurieveugen/work/service-billing/utils/zodValidateData')['default']
+}
+// for type re-export
+declare global {
+  // @ts-ignore
+  export type { GetTransactionsByAddressesOptions } from '/Users/gurieveugen/work/service-billing/utils/getTransactionsByAddresses'
+  import('/Users/gurieveugen/work/service-billing/utils/getTransactionsByAddresses')
 }

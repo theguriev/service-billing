@@ -16,11 +16,9 @@ export default eventHandler((event) => {
     ...(symbol ? { symbol } : {})
   }
 
-  // Фильтры по адресам
   if (address) {
     query.$or = [{ to: address }, { from: address }]
   } else {
-    // Если нет общего address, проверяем отдельные fromAddress и toAddress
     if (fromAddress) {
       query.from = fromAddress
     }
@@ -29,7 +27,6 @@ export default eventHandler((event) => {
     }
   }
 
-  // Фильтр по временному периоду
   if (from || to) {
     query.timestamp = {}
     if (from) {

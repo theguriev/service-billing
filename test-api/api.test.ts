@@ -1371,4 +1371,179 @@ describe.sequential('API', () => {
       })
     })
   })
+
+  describe('/transactions/bulk', () => {
+    it('[200] get transactions for multiple addresses', async () => {
+      await $fetch('/transactions/bulk', {
+        method: 'POST',
+        baseURL: 'http://localhost:3000',
+        headers: {
+          Accept: 'application/json'
+        },
+        body: {
+          addresses: [wallet.address, wallet2.address],
+          limit: 10
+        },
+        onResponse: ({ response }) => {
+          expect(response.status).toBe(200)
+          expect(response._data).toHaveProperty('transactions')
+          expect(response._data).toHaveProperty('metadata')
+          expect(response._data.transactions).toHaveProperty(wallet.address)
+          expect(response._data.transactions).toHaveProperty(wallet2.address)
+          expect(Array.isArray(response._data.transactions[wallet.address])).toBe(true)
+          expect(Array.isArray(response._data.transactions[wallet2.address])).toBe(true)
+          expect(response._data.metadata.totalAddresses).toBe(2)
+        }
+      })
+    })
+
+    it('[200] filter transactions by value', async () => {
+      await $fetch('/transactions/bulk', {
+        method: 'POST',
+        baseURL: 'http://localhost:3000',
+        headers: {
+          Accept: 'application/json'
+        },
+        body: {
+          addresses: [wallet.address, wallet2.address],
+          value: 10,
+          limit: 10
+        },
+        onResponse: ({ response }) => {
+          expect(response.status).toBe(200)
+          expect(response._data).toHaveProperty('transactions')
+          
+          // Check that all returned transactions have the specified value
+          Object.values(response._data.transactions).forEach((transactions: any) => {
+            transactions.forEach((transaction: any) => {
+              expect(transaction.value).toBe(10)
+            })
+          })
+        }
+      })
+    })
+
+    it('[200] filter transactions by time range', async () => {
+      const now = Date.now()
+      const oneHourAgo = now - (60 * 60 * 1000)
+
+      await $fetch('/transactions/bulk', {
+        method: 'POST',
+        baseURL: 'http://localhost:3000',
+        headers: {
+          Accept: 'application/json'
+        },
+        body: {
+          addresses: [wallet.address, wallet2.address],
+          fromTimestamp: oneHourAgo,
+          toTimestamp: now,
+          limit: 10
+        },
+        onResponse: ({ response }) => {
+          expect(response.status).toBe(200)
+          expect(response._data).toHaveProperty('transactions')
+          expect(response._data.metadata.filters.fromTimestamp).toBe(oneHourAgo)
+          expect(response._data.metadata.filters.toTimestamp).toBe(now)
+        }
+      })
+    })
+
+    it('[200] filter transactions by symbol', async () => {
+      await $fetch('/transactions/bulk', {
+        method: 'POST',
+        baseURL: 'http://localhost:3000',
+        headers: {
+          Accept: 'application/json'
+        },
+        body: {
+          addresses: [wallet.address, wallet2.address],
+          symbol: tokenSymbol,
+          limit: 10
+        },
+        onResponse: ({ response }) => {
+          expect(response.status).toBe(200)
+          expect(response._data).toHaveProperty('transactions')
+          
+          // Check that all returned transactions have the specified symbol
+          Object.values(response._data.transactions).forEach((transactions: any) => {
+            transactions.forEach((transaction: any) => {
+              expect(transaction.symbol).toBe(tokenSymbol)
+            })
+          })
+        }
+      })
+    })
+
+    it('[400] validate request parameters - empty addresses array', async () => {
+      await expect($fetch('/transactions/bulk', {
+        method: 'POST',
+        baseURL: 'http://localhost:3000',
+        headers: {
+          Accept: 'application/json'
+        },
+        body: {
+          addresses: [], // Empty array should fail
+          limit: 10
+        }
+      })).rejects.toThrow()
+    })
+
+    it('[400] validate request parameters - too many addresses', async () => {
+      await expect($fetch('/transactions/bulk', {
+        method: 'POST',
+        baseURL: 'http://localhost:3000',
+        headers: {
+          Accept: 'application/json'
+        },
+        body: {
+          addresses: new Array(51).fill('0x123'), // Too many addresses
+          limit: 10
+        }
+      })).rejects.toThrow()
+    })
+
+    it('[200] return metadata with correct statistics', async () => {
+      await $fetch('/transactions/bulk', {
+        method: 'POST',
+        baseURL: 'http://localhost:3000',
+        headers: {
+          Accept: 'application/json'
+        },
+        body: {
+          addresses: [wallet.address, wallet2.address, 'non-existent-wallet'],
+          limit: 10
+        },
+        onResponse: ({ response }) => {
+          expect(response.status).toBe(200)
+          expect(response._data.metadata).toHaveProperty('totalAddresses', 3)
+          expect(response._data.metadata).toHaveProperty('addressesWithTransactions')
+          expect(response._data.metadata).toHaveProperty('totalTransactions')
+          expect(response._data.metadata.addressesWithTransactions).toBeGreaterThanOrEqual(0)
+          expect(response._data.metadata.addressesWithTransactions).toBeLessThanOrEqual(3)
+        }
+      })
+    })
+
+    it('[200] handle non-existent addresses gracefully', async () => {
+      await $fetch('/transactions/bulk', {
+        method: 'POST',
+        baseURL: 'http://localhost:3000',
+        headers: {
+          Accept: 'application/json'
+        },
+        body: {
+          addresses: ['0x1234567890123456789012345678901234567890', '0x0987654321098765432109876543210987654321'],
+          limit: 10
+        },
+        onResponse: ({ response }) => {
+          expect(response.status).toBe(200)
+          expect(response._data.transactions).toHaveProperty('0x1234567890123456789012345678901234567890')
+          expect(response._data.transactions).toHaveProperty('0x0987654321098765432109876543210987654321')
+          expect(response._data.transactions['0x1234567890123456789012345678901234567890']).toEqual([])
+          expect(response._data.transactions['0x0987654321098765432109876543210987654321']).toEqual([])
+          expect(response._data.metadata.addressesWithTransactions).toBe(0)
+        }
+      })
+    })
+  })
 })

@@ -7,7 +7,6 @@ const requestBodySchema = z.object({
   signature: z.string(),
   message: z.string().optional(),
   symbol: z.string().min(1).max(3),
-  // idempotencyKey опциональный для обратной совместимости
   idempotencyKey: z.string().min(1).max(64).optional()
 })
 
@@ -22,15 +21,12 @@ export default eventHandler(async (event) => {
     idempotencyKey: providedKey
   } = await zodValidateBody(event, requestBodySchema.parse)
 
-  // Генерируем idempotencyKey если он не предоставлен (для обратной совместимости)
   const signatureData = JSON.stringify({ from, to, value, symbol })
   const idempotencyKey = providedKey || generateIdempotencyKeyFromSignature(signatureData, signature)
 
-  // Проверяем, существует ли уже транзакция с таким idempotencyKey
   const existingTransaction = await ModelTransaction.findOne({ idempotencyKey })
 
   if (existingTransaction) {
-    // Возвращаем существующую транзакцию (обеспечивает идемпотентность)
     return existingTransaction.toJSON()
   }
 
@@ -56,7 +52,6 @@ export default eventHandler(async (event) => {
     const saved = await doc.save()
     return saved.toJSON()
   } catch (error: any) {
-    // Если ошибка дубликата ключа, попробуем найти существующую транзакцию
     if (error.code === 11000 && error.keyPattern?.idempotencyKey) {
       const existingTransaction = await ModelTransaction.findOne({ idempotencyKey })
       if (existingTransaction) {

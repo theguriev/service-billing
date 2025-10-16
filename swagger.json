@@ -666,6 +666,56 @@
           }
         }
       }
+    },
+    "/transactions/bulk": {
+      "post": {
+        "summary": "Get Bulk Transactions by Addresses",
+        "description": "Retrieve transactions for multiple addresses with optional filtering by value, time range, and symbol. Returns transactions grouped by address.",
+        "operationId": "getBulkTransactions",
+        "tags": ["transactions"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BulkTransactionsRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Transactions retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BulkTransactionsResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request parameters",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ServerError"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -1425,6 +1475,159 @@
               "error": {
                 "type": "string",
                 "description": "Error message"
+              }
+            }
+          }
+        }
+      },
+      "BulkTransactionsRequest": {
+        "type": "object",
+        "properties": {
+          "addresses": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "minItems": 1,
+            "maxItems": 50,
+            "description": "Array of wallet addresses to get transactions for",
+            "example": ["0x123abc...", "0x456def..."]
+          },
+          "value": {
+            "type": "number",
+            "minimum": 0,
+            "description": "Filter by specific transaction value (optional)",
+            "example": 100
+          },
+          "fromTimestamp": {
+            "type": "number",
+            "minimum": 0,
+            "description": "Start timestamp for time range filter (optional)",
+            "example": 1640995200000
+          },
+          "toTimestamp": {
+            "type": "number",
+            "minimum": 0,
+            "description": "End timestamp for time range filter (optional)",
+            "example": 1672531200000
+          },
+          "symbol": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 10,
+            "description": "Filter by token symbol (optional)",
+            "example": "BTC"
+          },
+          "limit": {
+            "type": "number",
+            "minimum": 1,
+            "maximum": 1000,
+            "default": 100,
+            "description": "Maximum number of transactions to return"
+          },
+          "offset": {
+            "type": "number",
+            "minimum": 0,
+            "default": 0,
+            "description": "Number of transactions to skip"
+          },
+          "orderBy": {
+            "type": "string",
+            "enum": ["timestamp", "value", "symbol"],
+            "default": "timestamp",
+            "description": "Field to order by"
+          },
+          "order": {
+            "type": "string",
+            "enum": ["asc", "desc"],
+            "default": "desc",
+            "description": "Sort order"
+          }
+        },
+        "required": ["addresses"],
+        "example": {
+          "addresses": ["0x123abc...", "0x456def..."],
+          "fromTimestamp": 1640995200000,
+          "toTimestamp": 1672531200000,
+          "symbol": "BTC",
+          "limit": 50
+        }
+      },
+      "BulkTransactionsResponse": {
+        "type": "object",
+        "properties": {
+          "transactions": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "array",
+              "items": {
+                "$ref": "#/components/schemas/TransactionResponse"
+              }
+            },
+            "description": "Transactions grouped by address",
+            "example": {
+              "0x123abc...": [
+                {
+                  "_id": "507f1f77bcf86cd799439011",
+                  "from": "0x123abc...",
+                  "to": "0x456def...",
+                  "value": 100,
+                  "symbol": "BTC",
+                  "timestamp": "2023-01-01T00:00:00.000Z",
+                  "idempotencyKey": "auto-generated-key-123"
+                }
+              ],
+              "0x456def...": []
+            }
+          },
+          "metadata": {
+            "type": "object",
+            "properties": {
+              "totalAddresses": {
+                "type": "number",
+                "description": "Total number of addresses queried"
+              },
+              "addressesWithTransactions": {
+                "type": "number",
+                "description": "Number of addresses that have transactions"
+              },
+              "totalTransactions": {
+                "type": "number",
+                "description": "Total number of transactions returned"
+              },
+              "limit": {
+                "type": "number",
+                "description": "Applied limit"
+              },
+              "offset": {
+                "type": "number",
+                "description": "Applied offset"
+              },
+              "orderBy": {
+                "type": "string",
+                "description": "Applied ordering field"
+              },
+              "order": {
+                "type": "string",
+                "description": "Applied sort order"
+              },
+              "filters": {
+                "type": "object",
+                "properties": {
+                  "value": {
+                    "type": "number"
+                  },
+                  "fromTimestamp": {
+                    "type": "number"
+                  },
+                  "toTimestamp": {
+                    "type": "number"
+                  },
+                  "symbol": {
+                    "type": "string"
+                  }
+                },
+                "description": "Applied filters"
               }
             }
           }
