@@ -72,7 +72,7 @@ export async function getTransactionsByAddresses (options: GetTransactionsByAddr
     if (transaction.from && addresses.includes(transaction.from)) {
       result[transaction.from].push(transaction)
     }
-    
+
     // Добавляем транзакцию к адресу получателя, если он в списке и отличается от отправителя
     if (transaction.to && addresses.includes(transaction.to) && transaction.to !== transaction.from) {
       result[transaction.to].push(transaction)

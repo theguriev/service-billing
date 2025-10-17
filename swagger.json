@@ -716,6 +716,126 @@
           }
         }
       }
+    },
+    "/transactions/count": {
+      "get": {
+        "summary": "Count Transactions with Filters",
+        "description": "Count transactions matching specific criteria such as time range, value, symbol, and addresses. Returns count.",
+        "operationId": "countTransactions",
+        "tags": ["transactions"],
+        "parameters": [
+          {
+            "name": "fromTimestamp",
+            "in": "query",
+            "description": "Start timestamp for time range filter (optional)",
+            "required": false,
+            "schema": {
+              "type": "number",
+              "minimum": 0,
+              "example": 1640995200000
+            }
+          },
+          {
+            "name": "toTimestamp",
+            "in": "query",
+            "description": "End timestamp for time range filter (optional)",
+            "required": false,
+            "schema": {
+              "type": "number",
+              "minimum": 0,
+              "example": 1672531200000
+            }
+          },
+          {
+            "name": "value",
+            "in": "query",
+            "description": "Filter by specific transaction value (optional)",
+            "required": false,
+            "schema": {
+              "type": "number",
+              "minimum": 0,
+              "example": 100
+            }
+          },
+          {
+            "name": "symbol",
+            "in": "query",
+            "description": "Filter by token symbol (optional)",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 10,
+              "example": "BTC"
+            }
+          },
+          {
+            "name": "from",
+            "in": "query",
+            "description": "Filter by sender address (optional)",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "example": "0x123abc..."
+            }
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "description": "Filter by recipient address (optional)",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "example": "0x456def..."
+            }
+          },
+          {
+            "name": "address",
+            "in": "query",
+            "description": "Filter by address (transactions from or to this address, optional)",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "example": "0x789ghi..."
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Transaction count and statistics retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TransactionCountResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request parameters",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ServerError"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -1631,6 +1751,19 @@
               }
             }
           }
+        }
+      },
+      "TransactionCountResponse": {
+        "type": "object",
+        "properties": {
+          "count": {
+            "type": "number",
+            "description": "Number of transactions matching the criteria",
+            "example": 42
+          }
+        },
+        "example": {
+          "count": 42
         }
       }
     }

@@ -1412,7 +1412,7 @@ describe.sequential('API', () => {
         onResponse: ({ response }) => {
           expect(response.status).toBe(200)
           expect(response._data).toHaveProperty('transactions')
-          
+
           // Check that all returned transactions have the specified value
           Object.values(response._data.transactions).forEach((transactions: any) => {
             transactions.forEach((transaction: any) => {
@@ -1463,7 +1463,7 @@ describe.sequential('API', () => {
         onResponse: ({ response }) => {
           expect(response.status).toBe(200)
           expect(response._data).toHaveProperty('transactions')
-          
+
           // Check that all returned transactions have the specified symbol
           Object.values(response._data.transactions).forEach((transactions: any) => {
             transactions.forEach((transaction: any) => {
@@ -1542,6 +1542,130 @@ describe.sequential('API', () => {
           expect(response._data.transactions['0x1234567890123456789012345678901234567890']).toEqual([])
           expect(response._data.transactions['0x0987654321098765432109876543210987654321']).toEqual([])
           expect(response._data.metadata.addressesWithTransactions).toBe(0)
+        }
+      })
+    })
+  })
+
+  describe('/transactions/count', () => {
+    it('[200] count all transactions without filters', async () => {
+      await $fetch('/transactions/count', {
+        baseURL: 'http://localhost:3000',
+        headers: {
+          Accept: 'application/json'
+        },
+        onResponse: ({ response }) => {
+          expect(response.status).toBe(200)
+          expect(response._data).toHaveProperty('count')
+          expect(typeof response._data.count).toBe('number')
+          expect(response._data.count).toBeGreaterThanOrEqual(0)
+        }
+      })
+    })
+
+    it('[200] count transactions by specific value', async () => {
+      await $fetch('/transactions/count?value=10', {
+        baseURL: 'http://localhost:3000',
+        headers: {
+          Accept: 'application/json'
+        },
+        onResponse: ({ response }) => {
+          expect(response.status).toBe(200)
+          expect(response._data).toHaveProperty('count')
+        }
+      })
+    })
+
+    it('[200] count transactions by symbol', async () => {
+      await $fetch('/transactions/count?symbol=' + tokenSymbol, {
+        baseURL: 'http://localhost:3000',
+        headers: {
+          Accept: 'application/json'
+        },
+        onResponse: ({ response }) => {
+          expect(response.status).toBe(200)
+          expect(response._data).toHaveProperty('count')
+        }
+      })
+    })
+
+    it('[200] count transactions by time range', async () => {
+      const now = Date.now()
+      const oneHourAgo = now - (60 * 60 * 1000)
+
+      await $fetch('/transactions/count?fromTimestamp=' + oneHourAgo + '&toTimestamp=' + now, {
+        baseURL: 'http://localhost:3000',
+        headers: {
+          Accept: 'application/json'
+        },
+        onResponse: ({ response }) => {
+          expect(response.status).toBe(200)
+          expect(response._data).toHaveProperty('count')
+        }
+      })
+    })
+
+    it('[200] count transactions by sender address', async () => {
+      await $fetch('/transactions/count?from=' + wallet.address, {
+        baseURL: 'http://localhost:3000',
+        headers: {
+          Accept: 'application/json'
+        },
+        onResponse: ({ response }) => {
+          expect(response.status).toBe(200)
+          expect(response._data).toHaveProperty('count')
+        }
+      })
+    })
+
+    it('[200] count transactions by recipient address', async () => {
+      await $fetch('/transactions/count?to=' + wallet2.address, {
+        baseURL: 'http://localhost:3000',
+        headers: {
+          Accept: 'application/json'
+        },
+        onResponse: ({ response }) => {
+          expect(response.status).toBe(200)
+          expect(response._data).toHaveProperty('count')
+        }
+      })
+    })
+
+    it('[200] count transactions by general address (from or to)', async () => {
+      await $fetch('/transactions/count?address=' + wallet.address, {
+        baseURL: 'http://localhost:3000',
+        headers: {
+          Accept: 'application/json'
+        },
+        onResponse: ({ response }) => {
+          expect(response.status).toBe(200)
+          expect(response._data).toHaveProperty('count')
+        }
+      })
+    })
+
+    it('[200] count transactions with multiple filters', async () => {
+      await $fetch('/transactions/count?symbol=' + tokenSymbol + '&value=10&address=' + wallet.address, {
+        baseURL: 'http://localhost:3000',
+        headers: {
+          Accept: 'application/json'
+        },
+        onResponse: ({ response }) => {
+          expect(response.status).toBe(200)
+          expect(response._data).toHaveProperty('count')
+        }
+      })
+    })
+
+    it('[200] count with no matching transactions should return zero', async () => {
+      await $fetch('/transactions/count?symbol=NOEXIST&value=999999', {
+        baseURL: 'http://localhost:3000',
+        headers: {
+          Accept: 'application/json'
+        },
+        onResponse: ({ response }) => {
+          expect(response.status).toBe(200)
+          expect(response._data.count).toBe(0)
         }
       })
     })
