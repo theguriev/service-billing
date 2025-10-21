@@ -1,5 +1,3 @@
-import { getTransactionsByAddresses } from '../../utils/getTransactionsByAddresses'
-
 const requestBodySchema = z.object({
   addresses: z.array(z.string().min(1)).min(1).max(50),
   value: z.number().min(0).optional(),
