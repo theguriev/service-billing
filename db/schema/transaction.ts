@@ -17,4 +17,10 @@ const transactionSchema = new Schema({
   }
 })
 
+// Добавляем индексы для оптимизации запросов баланса
+transactionSchema.index({ to: 1, symbol: 1 }) // Для входящих транзакций
+transactionSchema.index({ from: 1, symbol: 1 }) // Для исходящих транзакций
+transactionSchema.index({ to: 1 }) // Дополнительный индекс для быстрого поиска по адресу получателя
+transactionSchema.index({ from: 1 }) // Дополнительный индекс для быстрого поиска по адресу отправителя
+
 export default transactionSchema

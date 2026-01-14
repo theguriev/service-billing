@@ -66,30 +66,136 @@ const calculateAddressBalance = (
 
 // Основная функция
 const getBallanceMultiple = async (addresses: string[]): Promise<AddressBalanceResult[]> => {
-  // Параллельное выполнение запросов к БД
-  const [incomeTransactions, outcomeTransactions] = await Promise.all([
-    ModelTransaction.find({ to: { $in: addresses } }).lean(),
-    ModelTransaction.find({ from: { $in: addresses } }).lean()
+  // Используем агрегацию для оптимизированного вычисления балансов
+  const aggregationResult = await ModelTransaction.aggregate([
+    // Находим все транзакции, где адрес является отправителем или получателем
+    {
+      $match: {
+        $or: [
+          { to: { $in: addresses } },
+          { from: { $in: addresses } }
+        ],
+        // Фильтруем только транзакции с валидными данными
+        symbol: { $exists: true, $ne: null },
+        value: { $exists: true, $ne: null }
+      }
+    },
+    // Создаем документы для входящих и исходящих транзакций
+    {
+      $addFields: {
+        transactions: [
+          {
+            $cond: [
+              { $in: ['$to', addresses] },
+              {
+                address: '$to',
+                type: 'income',
+                symbol: '$symbol',
+                value: '$value'
+              },
+              null
+            ]
+          },
+          {
+            $cond: [
+              { $in: ['$from', addresses] },
+              {
+                address: '$from',
+                type: 'outcome',
+                symbol: '$symbol',
+                value: '$value'
+              },
+              null
+            ]
+          }
+        ]
+      }
+    },
+    // Разворачиваем массив транзакций
+    { $unwind: '$transactions' },
+    // Убираем null значения
+    { $match: { 'transactions': { $ne: null } } },
+    // Заменяем корневой документ на transactions
+    { $replaceRoot: { newRoot: '$transactions' } },
+    // Группируем по адресу, типу и символу
+    {
+      $group: {
+        _id: {
+          address: '$address',
+          type: '$type',
+          symbol: '$symbol'
+        },
+        totalValue: { $sum: '$value' },
+        count: { $sum: 1 }
+      }
+    },
+    // Группируем по адресу и типу для агрегации по символам
+    {
+      $group: {
+        _id: {
+          address: '$_id.address',
+          type: '$_id.type'
+        },
+        balanceBySymbol: {
+          $push: {
+            symbol: '$_id.symbol',
+            value: '$totalValue'
+          }
+        },
+        transactionCount: { $sum: '$count' }
+      }
+    },
+    // Финальная группировка по адресу
+    {
+      $group: {
+        _id: '$_id.address',
+        data: {
+          $push: {
+            type: '$_id.type',
+            balanceBySymbol: '$balanceBySymbol',
+            transactionCount: '$transactionCount'
+          }
+        }
+      }
+    }
   ])
 
-  // Группируем транзакции по адресам функционально
-  const incomeByAddress = groupTransactionsByAddress(
-    incomeTransactions as TransactionData[],
-    'to'
-  )
-  const outcomeByAddress = groupTransactionsByAddress(
-    outcomeTransactions as TransactionData[],
-    'from'
-  )
-
-  // Вычисляем балансы для всех адресов функционально
-  return addresses.map(address =>
-    calculateAddressBalance(
+  // Преобразуем результат агрегации в нужный формат
+  const resultMap = new Map<string, AddressBalanceResult>()
+  
+  // Инициализируем все адреса
+  addresses.forEach(address => {
+    resultMap.set(address, {
       address,
-      incomeByAddress[address] || [],
-      outcomeByAddress[address] || []
-    )
-  )
+      ballanceBySymbol: {},
+      incomeTransactionCount: 0,
+      outcomeTransactionCount: 0
+    })
+  })
+
+  // Обрабатываем результаты агрегации
+  aggregationResult.forEach((item: any) => {
+    const address = item._id
+    const result = resultMap.get(address)!
+    
+    item.data.forEach((typeData: any) => {
+      if (typeData.type === 'income') {
+        result.incomeTransactionCount = typeData.transactionCount
+        typeData.balanceBySymbol.forEach((balance: any) => {
+          result.ballanceBySymbol[balance.symbol] = 
+            (result.ballanceBySymbol[balance.symbol] || 0) + balance.value
+        })
+      } else if (typeData.type === 'outcome') {
+        result.outcomeTransactionCount = typeData.transactionCount
+        typeData.balanceBySymbol.forEach((balance: any) => {
+          result.ballanceBySymbol[balance.symbol] = 
+            (result.ballanceBySymbol[balance.symbol] || 0) - balance.value
+        })
+      }
+    })
+  })
+
+  return Array.from(resultMap.values())
 }
 
 export default getBallanceMultiple
